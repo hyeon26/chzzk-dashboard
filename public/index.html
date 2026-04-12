@@ -1230,7 +1230,7 @@ window.chatConnect=async()=>{
     chatChannelIdCache=chatChannelId; chatAutoReconnect=true;
     chatWs=new WebSocket('wss://kr-ss1.chat.naver.com/chat');
     chatSessionStart=new Date();
-    chatWs.onopen=()=>{
+    chatWs.onopen=async()=>{
       chatWs.send(JSON.stringify({ver:'2',cmd:100,svcid:'game',cid:chatChannelId,bdy:{uid:null,devType:2001,accTkn:finalToken,auth:'READ'},tid:1}));
       chatSetStatus(true);
       updateLiveBadge(true, '');
