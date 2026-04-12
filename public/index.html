@@ -1032,14 +1032,14 @@ function handleDonation(donation){
   } catch(e){}
 }
 
-// Vercel API 라우트를 통한 서버사이드 호출 (CORS 문제 없음)
+// Vercel API 라우트 (CORS 없이 서버에서 직접 호출)
 async function fetchLiveStatus(){
   const r = await fetch('/api/live-status');
   if(!r.ok) throw new Error(r.status);
   return r.json();
 }
 async function fetchAccessToken(channelId){
-  const r = await fetch(`/api/access-token?channelId=${channelId}`);
+  const r = await fetch(`/api/access-token?channelId=${encodeURIComponent(channelId)}`);
   if(!r.ok) throw new Error(r.status);
   return r.json();
 }
@@ -1097,17 +1097,21 @@ window.chatConnect=async()=>{
   btn.textContent='연결 중...'; btn.disabled=true;
   try{
     const data=await fetchLiveStatus();
-    let chatChannelId = data.content?.chatChannelId;
-    if(!chatChannelId){ alert('채팅 채널 ID를 찾을 수 없어요.'); return; }
+    const chatChannelId = data.content?.chatChannelId || CHANNEL_ID;
+    const accessToken = data.content?.accessToken || '';
+    // accessToken이 없으면 별도 요청
+    let finalToken = accessToken;
+    if(!finalToken){
+      const tokenData=await fetchAccessToken(chatChannelId);
+      finalToken=tokenData?.content?.accessToken||'';
+    }
     chatChannelIdCache=chatChannelId; chatAutoReconnect=true;
-    const tokenData=await fetchAccessToken(chatChannelId);
-    const accessToken=tokenData?.content?.accessToken||'';
     // 채팅 서버 번호를 chatChannelId 기반으로 결정 (1~6 중 하나)
     const ssNum = (parseInt(chatChannelId.slice(-1), 16) % 6) + 1;
     chatWs=new WebSocket(`wss://kr-ss${ssNum}.chat.naver.com/chat`);
     chatSessionStart=new Date();
     chatWs.onopen=()=>{
-      chatWs.send(JSON.stringify({ver:'2',cmd:100,svcid:'game',cid:chatChannelId,bdy:{uid:null,devType:2001,accTkn:accessToken,auth:'READ'},tid:1}));
+      chatWs.send(JSON.stringify({ver:'2',cmd:100,svcid:'game',cid:chatChannelId,bdy:{uid:null,devType:2001,accTkn:finalToken,auth:'READ'},tid:1}));
       chatSetStatus(true);
       updateLiveBadge(true, '');
       const log=document.getElementById('chat-log'); log.innerHTML='';
