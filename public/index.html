@@ -1066,9 +1066,7 @@ async function reconnectChat(){
     // 토큰 재발급
     const tokenData=await fetchAccessToken(chatChannelIdCache);
     const accessToken=tokenData?.content?.accessToken||'';
-    // 채팅 서버 번호를 chatChannelId 기반으로 결정 (1~6 중 하나)
-    const ssNum = (parseInt(chatChannelId.slice(-1), 16) % 6) + 1;
-    chatWs=new WebSocket(`wss://kr-ss${ssNum}.chat.naver.com/chat`);
+    chatWs=new WebSocket('wss://kr-ss1.chat.naver.com/chat');
     chatWs.onopen=()=>{
       chatWs.send(JSON.stringify({ver:'2',cmd:100,svcid:'game',cid:chatChannelIdCache,bdy:{uid:null,devType:2001,accTkn:accessToken,auth:'READ'},tid:1}));
       chatSetStatus(true);
@@ -1106,9 +1104,7 @@ window.chatConnect=async()=>{
       finalToken=tokenData?.content?.accessToken||'';
     }
     chatChannelIdCache=chatChannelId; chatAutoReconnect=true;
-    // 채팅 서버 번호를 chatChannelId 기반으로 결정 (1~6 중 하나)
-    const ssNum = (parseInt(chatChannelId.slice(-1), 16) % 6) + 1;
-    chatWs=new WebSocket(`wss://kr-ss${ssNum}.chat.naver.com/chat`);
+    chatWs=new WebSocket('wss://kr-ss1.chat.naver.com/chat');
     chatSessionStart=new Date();
     chatWs.onopen=()=>{
       chatWs.send(JSON.stringify({ver:'2',cmd:100,svcid:'game',cid:chatChannelId,bdy:{uid:null,devType:2001,accTkn:finalToken,auth:'READ'},tid:1}));
