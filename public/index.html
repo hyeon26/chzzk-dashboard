@@ -1600,7 +1600,7 @@ async function loadClips(reset=false){
       thumb: c.thumbnailImageUrl,
       duration: c.duration,
       views: c.readCount,
-      date: new Date(c.createdDate.replace(' ','T'))
+      date: (() => { const d = new Date(c.createdDate.replace(' ','T')); d.setHours(d.getHours()-9); return d; })()
     }));
     clipsNextUID = clipRes?.content?.page?.next?.clipUID || null;
 
@@ -1612,7 +1612,7 @@ async function loadClips(reset=false){
       thumb: v.snippet.thumbnails?.medium?.url || v.snippet.thumbnails?.default?.url,
       duration: null,
       views: null,
-      date: (() => { const d = new Date(v.snippet.publishedAt); d.setHours(d.getHours()+9); return d; })()
+      date: new Date(v.snippet.publishedAt)
     }));
     clipsYtPageToken = ytRes?.nextPageToken || null;
 
