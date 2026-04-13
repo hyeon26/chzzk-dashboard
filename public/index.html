@@ -690,10 +690,26 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
+
+<!-- 컨텐츠 보기 모달 -->
+<div class="modal-bg" id="content-view-modal">
+  <div class="modal">
+    <h3 id="cv-title-heading">🎬 컨텐츠</h3>
+    <div id="cv-date" style="font-size:13px;color:var(--text3);margin-bottom:8px"></div>
+    <div id="cv-duration" style="font-size:13px;color:var(--text2);margin-bottom:8px"></div>
+    <div id="cv-note" style="font-size:14px;color:var(--text);white-space:pre-wrap;line-height:1.6;margin-bottom:12px"></div>
+    <div id="cv-files" style="margin-bottom:16px"></div>
+    <div class="modal-actions">
+      <button onclick="closeModal('content-view-modal')" class="btn-cancel">닫기</button>
+      <button onclick="openContentEditFromView()" class="btn-save">✏️ 수정</button>
+    </div>
+  </div>
+</div>
+
 <!-- 컨텐츠 수정 -->
 <div class="modal-bg" id="content-detail-modal">
   <div class="modal">
-    <h3>🎬 컨텐츠 수정</h3>
+    <h3>✏️ 컨텐츠 수정</h3>
     <label>컨텐츠 제목</label><input id="cd-title" type="text"/>
     <label>날짜</label><input id="cd-date" type="date"/>
     <label>진행 시간 (선택)</label><input id="cd-duration" type="text"/>
@@ -1080,12 +1096,35 @@ window.saveContent=async()=>{
 window.openContentDetail=(id)=>{
   const c=contents.find(x=>x.id===id); if(!c) return;
   currentContentId=id;
+  // 보기 모달
+  document.getElementById('cv-title-heading').textContent='🎬 '+c.title;
+  document.getElementById('cv-date').textContent=c.date ? '📅 '+c.date : '';
+  document.getElementById('cv-duration').textContent=c.duration ? '⏱ '+c.duration : '';
+  document.getElementById('cv-note').textContent=c.note||'';
+  // 첨부파일 표시
+  const filesDiv=document.getElementById('cv-files');
+  filesDiv.innerHTML='';
+  if(c.files&&c.files.length){
+    c.files.forEach(f=>{
+      const a=document.createElement('a');
+      a.href=f.url; a.target='_blank'; a.rel='noopener';
+      a.style.cssText='display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--surface2);border-radius:8px;text-decoration:none;color:var(--text);font-size:13px;margin:4px 4px 0 0';
+      a.innerHTML='📎 '+f.name;
+      filesDiv.appendChild(a);
+    });
+  }
+  openModal('content-view-modal');
+};
+
+window.openContentEditFromView=()=>{
+  const c=contents.find(x=>x.id===currentContentId); if(!c) return;
+  closeModal('content-view-modal');
   document.getElementById('cd-title').value=c.title;
   document.getElementById('cd-date').value=c.date;
   document.getElementById('cd-duration').value=c.duration||'';
   document.getElementById('cd-note').value=c.note||'';
   cdPendingFiles=[]; renderPending('cd');
-  renderExistingFiles(c.files||[], id);
+  renderExistingFiles(c.files||[], currentContentId);
   openModal('content-detail-modal');
 };
 window.updateContent=async()=>{
