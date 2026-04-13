@@ -1323,7 +1323,7 @@ function handleDonation(donation){
     div.style.cssText=`padding:3px 0;border-bottom:0.5px solid var(--border);background:${isMission?'rgba(245,158,11,.08)':'rgba(255,200,0,.06)'}`;
     const icon = isMission ? '🎯' : '💰';
     const label = isMission ? '미션' : '후원';
-    const msg = extras?.donationText || extras?.message || '';
+    const msg = donation.msg || extras?.donationText || extras?.message || '';
     div.innerHTML=`<span style="color:var(--text3)">[${time}]</span> <span style="color:#f59e0b;font-weight:700">${icon} ${nick||'익명의 후원자'}</span><span style="color:var(--text2)"> ${amt.toLocaleString()}원 ${label}!</span>${msg?`<div style="color:var(--text2);font-size:12px;padding-left:4px;margin-top:2px">💬 ${msg}</div>`:''}`;
     log.appendChild(div); log.scrollTop=log.scrollHeight;
     if(isMission){
