@@ -163,6 +163,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 /* ── 모바일 반응형 ── */
 @media (max-width: 768px) {
+  /* 달력 모바일 - 전체 너비 사용 */
+  .schedule-grid { grid-template-columns: 1fr !important; }
+  .cal-card { padding: 12px 8px; }
+  .cal-cells { grid-template-columns: repeat(7, 1fr); }
+  .cal-cell { min-height: 60px; padding: 4px; font-size: 13px; }
+  .cal-cell .event-chip { font-size: 10px; padding: 1px 4px; }
+  .cal-title { font-size: 16px; }
+  .upcoming-card { margin-top: 12px; }
+  .excel-upload-bar { width: 100%; justify-content: center; box-sizing: border-box; }
+}
+
+@media (max-width: 768px) {
   .header { padding: 10px 14px; }
   .header-left img { width: 36px; height: 36px; }
   .header-left h1 { font-size: 16px; }
