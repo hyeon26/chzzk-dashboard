@@ -187,21 +187,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   .tab-label { display: inline; font-size: 11px; }
   .tab-icon { font-size: 14px; }
   .main { padding: 14px; }
-  /* 채팅 탭 모바일 - 세로 레이아웃 */
-  #tab-chat > div[style*="grid-template-columns"] {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-  }
-  /* 채팅 로그 높이 모바일 */
-  #chat-log {
-    height: 300px !important;
-    min-height: 200px !important;
-  }
-  /* 참여자/후원 패널 높이 모바일 */
-  #stat-top { max-height: 200px; overflow-y: auto; }
-  #stat-done-list { max-height: 200px; overflow-y: auto; }
-  #stat-mission-list { max-height: 150px; overflow-y: auto; }
   /* 버튼 줄바꿈 */
   .chat-btn { font-size: 11px; padding: 6px 10px; }
   /* 컨텐츠/방송보조 카드 */
@@ -215,6 +200,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   .tab-label { display: none; }
   .tab { padding: 10px; }
 }
+@media (max-width: 480px) {
+  #tab-chat > div[style*="grid-template-columns"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  #chat-log {
+    height: 300px !important;
+    min-height: 200px !important;
+  }
+  #stat-top { max-height: 200px; overflow-y: auto; }
+  #stat-done-list { max-height: 200px; overflow-y: auto; }
+  #stat-mission-list { max-height: 150px; overflow-y: auto; }
+}
+
 </style>
 </head>
 <body>
