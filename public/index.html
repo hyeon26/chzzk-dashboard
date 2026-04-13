@@ -432,15 +432,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
   <!-- 클립 -->
   <div id="tab-clips" class="tab-content">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap">
-      <div style="font-size:18px;font-weight:800;color:var(--text);flex-shrink:0">🎞 클립 모음</div>
-      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;justify-content:flex-end">
+    <div style="margin-bottom:16px">
+      <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:10px">🎞 클립 모음</div>
+      <div style="display:flex;align-items:center;gap:8px">
         <div style="display:flex;gap:4px;flex-shrink:0">
           <button onclick="setSortOrder('newest')" id="sort-newest" class="sort-btn active-sort">최신순</button>
           <button onclick="setSortOrder('oldest')" id="sort-oldest" class="sort-btn">오래된순</button>
           <button onclick="setSortOrder('popular')" id="sort-popular" class="sort-btn">인기순</button>
         </div>
-        <div style="position:relative;flex:1;max-width:280px;min-width:120px">
+        <div style="position:relative;flex:1;min-width:0">
           <input id="clip-search" type="text" placeholder="클립 검색..." oninput="filterClips(this.value)"
             style="width:100%;padding:8px 36px 8px 14px;border:1.5px solid var(--border2);border-radius:20px;background:var(--surface);color:var(--text);font-size:13px;outline:none;box-sizing:border-box"
             onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
