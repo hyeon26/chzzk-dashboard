@@ -1546,7 +1546,8 @@ function formatDuration(sec){
 }
 function formatClipDate(str){
   const d = new Date(str.replace(' ','T'));
-  return `${d.getMonth()+1}/${d.getDate()}`;
+  const days = ['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
 }
 function formatViews(n){
   return n >= 1000 ? (n/1000).toFixed(1)+'k' : n+'';
@@ -1616,14 +1617,7 @@ window.openClipPlayer = (clipUID, title) => {
   openModal('clip-player-modal');
 };
 
-// 모달 닫을 때 iframe src 초기화 (영상 멈춤)
-const origClose = window.closeModal;
-window.closeModal = (id) => {
-  if(id === 'clip-player-modal'){
-    document.getElementById('clip-player-iframe').src = '';
-  }
-  origClose(id);
-};
+
 
 
 
@@ -1639,7 +1633,7 @@ window.switchTab=(name,el)=>{
   if(name==='tools') loadTools();
 };
 window.openModal=(id)=>document.getElementById(id).classList.add('open');
-window.closeModal=(id)=>document.getElementById(id).classList.remove('open');
+window.closeModal=(id)=>{ if(id==='clip-player-modal') document.getElementById('clip-player-iframe').src=''; document.getElementById(id).classList.remove('open'); };
 document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
 window.fmtTime=(el)=>{ let v=el.value.replace(/[^0-9]/g,''); if(v.length>2) v=v.slice(0,2)+':'+v.slice(2,4); el.value=v; };
 
