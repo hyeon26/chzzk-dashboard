@@ -862,7 +862,7 @@ function renderUpcoming(){
         <div>
           <div class="up-name">${s.name}</div>
           <div class="up-time">${formatDate(s.date)}${s.time?' · '+s.time:''}</div>
-          ${s.note?`<div class="up-time" style="margin-top:3px;font-style:italic">${linkify(s.note)}</div>`:''}
+          ${s.note?`<div class="up-time" style="margin-top:3px;font-style:italic;word-break:break-all">${linkify(s.note)}</div>`:''}
           <div class="up-tag ${TYPE_CLASS[s.type]||'ev-stream'}" style="margin-top:4px">${TYPE_LABEL[s.type]||'컨텐츠'}</div>
         </div>
       </div>
