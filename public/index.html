@@ -253,12 +253,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   <div id="tab-schedule" class="tab-content active">
     <div class="schedule-grid">
       <div>
-        <input type="file" id="excel-file-input" class="excel-upload" accept=".xlsx,.xls" multiple/>
-        <label class="excel-upload-bar" for="excel-file-input">
-          <span class="excel-upload-bar-icon">📊</span>
-          <span class="excel-upload-bar-text">엑셀 업로드 (여러 파일 가능)</span>
-          <span class="excel-badge" id="excel-badge">선택</span>
-        </label>
         <div class="cal-card">
           <div class="cal-header">
             <button class="cal-nav-btn" onclick="moveMonth(-1)">◀</button>
@@ -276,6 +270,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
           </div>
           <div class="cal-cells" id="cal-cells"></div>
         </div>
+        <input type="file" id="excel-file-input" class="excel-upload" accept=".xlsx,.xls" multiple/>
+        <label class="excel-upload-bar" for="excel-file-input" style="margin-top:14px">
+          <span class="excel-upload-bar-icon">📊</span>
+          <span class="excel-upload-bar-text">엑셀 업로드 (여러 파일 가능)</span>
+          <span class="excel-badge" id="excel-badge">선택</span>
+        </label>
       </div>
       <div class="upcoming-card">
         <div class="up-title">다가오는 일정</div>
@@ -1269,7 +1269,9 @@ window.deleteSession=async(sessionId, btn)=>{
     batch.delete(doc(db,'chatSessions',sessionId));
     await batch.commit();
     // 해당 세션 카드 제거
-    btn.closest('div[style*="padding:12px"]').remove();
+    let el = btn;
+    while(el && !el.style.borderRadius) el = el.parentElement;
+    if(el) el.remove();
   } catch(e){ alert('삭제 실패: '+e.message); btn.textContent='🗑'; btn.disabled=false; }
 };
 
