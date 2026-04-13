@@ -1675,7 +1675,7 @@ window.filterClips = (q) => {
 let clipsFilteredCache = [];
 function renderClipsPage(){
   const grid = document.getElementById('clips-grid');
-  const src = clipsFilter ? clipsFilteredCache : allClipsCache;
+  const src = clipsFilteredCache.length > 0 ? clipsFilteredCache : allClipsCache;
   if(!src.length){ grid.innerHTML='<div class="empty-state">검색 결과가 없어요</div>'; return; }
   src.slice(clipsPage*20, clipsPage*20+20).forEach(item=>{
     const card = document.createElement('div');
