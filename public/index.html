@@ -422,7 +422,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <div class="loading">클립 불러오는 중...</div>
     </div>
     <div style="text-align:center;margin-top:24px">
-      <button id="clips-more-btn" onclick="loadMoreClips()" class="btn-primary" style="display:none">더 보기</button>
+      <button id="clips-more-btn" onclick="loadMoreClips()" style="display:none;background:var(--surface);border:1.5px solid var(--border2);color:var(--text);padding:10px 32px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">더 보기 ↓</button>
     </div>
   </div>
 
@@ -1560,17 +1560,20 @@ async function loadClips(reset=false){
   if(reset){ grid.innerHTML='<div class="loading">불러오는 중...</div>'; clipsNextUID=null; }
 
   try {
+    // offset은 clipUID 기반 - 처음엔 없고 더보기 누르면 마지막 clipUID 전달
     const url = clipsNextUID
-      ? `/api/clips?offset=${clipsNextUID}`
+      ? `/api/clips?clipUID=${clipsNextUID}`
       : '/api/clips';
     const res = await fetch(url);
     const data = await res.json();
     const clips = data?.content?.data || [];
+    // 다음 페이지의 첫 clipUID
     clipsNextUID = data?.content?.page?.next?.clipUID || null;
 
     if(reset) grid.innerHTML = '';
     if(clips.length === 0 && reset){
       grid.innerHTML = '<div class="empty-state">클립이 없어요</div>';
+      moreBtn.style.display = 'none';
       return;
     }
 
@@ -1580,9 +1583,10 @@ async function loadClips(reset=false){
       card.href = `https://chzzk.naver.com/clips/${clip.clipUID}`;
       card.target = '_blank';
       card.rel = 'noopener';
+      // 썸네일 없으면 (성인 클립 등) 기본 이미지
       const thumb = clip.thumbnailImageUrl
-        ? `<img src="${clip.thumbnailImageUrl}" alt="${clip.clipTitle}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy"/>`
-        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:24px">🎞</div>`;
+        ? `<img src="${clip.thumbnailImageUrl}" alt="${clip.clipTitle}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text3);font-size:28px\'>🎞</div>'">`
+        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text3);font-size:28px">🎞</div>`;
       card.innerHTML = `
         <div class="clip-thumb-wrap">
           ${thumb}
@@ -1598,7 +1602,7 @@ async function loadClips(reset=false){
       grid.appendChild(card);
     });
 
-    moreBtn.style.display = clipsNextUID ? 'inline-flex' : 'none';
+    moreBtn.style.display = clipsNextUID ? 'inline-block' : 'none';
   } catch(e){
     if(reset) grid.innerHTML = '<div class="empty-state">불러오기 실패</div>';
   } finally {
