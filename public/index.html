@@ -862,7 +862,7 @@ function renderUpcoming(){
         <div>
           <div class="up-name">${s.name}</div>
           <div class="up-time">${formatDate(s.date)}${s.time?' · '+s.time:''}</div>
-          ${s.note?`<div class="up-time" style="margin-top:3px;font-style:italic">${s.note}</div>`:''}
+          ${s.note?`<div class="up-time" style="margin-top:3px;font-style:italic">${linkify(s.note)}</div>`:''}
           <div class="up-tag ${TYPE_CLASS[s.type]||'ev-stream'}" style="margin-top:4px">${TYPE_LABEL[s.type]||'컨텐츠'}</div>
         </div>
       </div>
@@ -925,7 +925,7 @@ window.openScheduleView=(id)=>{
   document.getElementById('sv-title').textContent=s.name;
   document.getElementById('sv-meta').textContent=`${formatDate(s.date)}${s.time?' · '+s.time:''}  |  ${TYPE_LABEL[s.type]||'일정'}`;
   const n=document.getElementById('sv-note');
-  if(s.note){ n.textContent=s.note; n.style.display='block'; } else n.style.display='none';
+  if(s.note){ n.innerHTML=linkify(s.note); n.style.display='block'; } else n.style.display='none';
   const yw=document.getElementById('sv-youtube-wrap'), yl=document.getElementById('sv-youtube-link');
   if(s.youtube){ yl.href=s.youtube; yw.style.display='block'; } else yw.style.display='none';
   openModal('schedule-view-modal');
@@ -1110,7 +1110,7 @@ window.openContentDetail=(id)=>{
   document.getElementById('cv-title-heading').textContent='🎬 '+c.title;
   document.getElementById('cv-date').textContent=c.date ? '📅 '+c.date : '';
   document.getElementById('cv-duration').textContent=c.duration ? '⏱ '+c.duration : '';
-  document.getElementById('cv-note').textContent=c.note||'';
+  document.getElementById('cv-note').innerHTML=linkify(c.note||'');
   // 첨부파일 표시
   const filesDiv=document.getElementById('cv-files');
   filesDiv.innerHTML='';
@@ -1802,6 +1802,11 @@ window.openClipPlayer = (id, title, type='chzzk') => {
 
 
 // ── 탭/모달/기타 ──
+
+function linkify(text){
+  if(!text) return '';
+  return text.replace(/(https?:\/\/[^\s<>"']+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:underline;word-break:break-all">$1</a>');
+}
 window.switchTab=(name,el)=>{
   if(name==='clips'){ allClipsCache=[]; clipsPage=0; loadClips(true); }
   history.replaceState(null, '', '/' + name);
