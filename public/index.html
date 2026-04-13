@@ -1616,36 +1616,19 @@ async function loadClips(reset=false){
 
       let items = [];
 
-      // Firebase REST API로 캐시 먼저 시도
+      // Firebase SDK로 캐시 먼저 시도
       try {
-        const FSBASE = 'https://firestore.googleapis.com/v1/projects/firstandsecond-b449c/databases/(default)/documents';
-        const FSKEY = 'AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw';
-        const metaRes = await fetch(`${FSBASE}/clipCache/meta?key=${FSKEY}`);
-        if(metaRes.ok){
-          const metaDoc = await metaRes.json();
-          const chunks = parseInt(metaDoc.fields?.chunks?.integerValue || 0);
-          if(chunks > 0){
-            const chunkRes = await Promise.all(
-              Array.from({length: chunks}, (_, i) =>
-                fetch(`${FSBASE}/clipCache/chunk_${i}?key=${FSKEY}`).then(r=>r.json())
-              )
-            );
-            chunkRes.forEach(doc => {
-              const arr = doc.fields?.clips?.arrayValue?.values || [];
-              arr.forEach(v => {
-                const f = v.mapValue.fields;
-                items.push({
-                  type: f.type.stringValue,
-                  id: f.id.stringValue,
-                  title: f.title.stringValue,
-                  thumb: f.thumb?.stringValue || null,
-                  duration: f.duration?.integerValue ? parseInt(f.duration.integerValue) : null,
-                  views: parseInt(f.views?.integerValue || 0),
-                  date: f.date.stringValue,
-                  adult: f.adult?.booleanValue || false
-                });
-              });
-            });
+        const metaSnap = await getDocs(query(collection(db, 'clipCache')));
+        let meta = null;
+        const chunkDocs = {};
+        metaSnap.forEach(d => {
+          if(d.id === 'meta') meta = d.data();
+          else chunkDocs[d.id] = d.data();
+        });
+        if(meta && meta.chunks > 0){
+          for(let i = 0; i < meta.chunks; i++){
+            const chunk = chunkDocs[`chunk_${i}`];
+            if(chunk) items.push(...chunk.clips);
           }
         }
       } catch(e){ console.log('Firebase 캐시 실패:', e.message); }
