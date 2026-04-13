@@ -135,7 +135,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .drag-item:hover .drag-handle{opacity:1}
 .drag-handle:active{cursor:grabbing}
 
-/* 방송 보조 */
+/* 사이트 */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .section-title{font-size:15px;font-weight:700}
 
@@ -285,7 +285,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <div class="tabs">
   <div class="tab active" onclick="switchTab('schedule',this)">📅 스케줄</div>
   <div class="tab" onclick="switchTab('content',this)">🎬 컨텐츠</div>
-  <div class="tab" onclick="switchTab('tools',this)">🔗 방송 보조</div>
+  <div class="tab" onclick="switchTab('tools',this)">🔗 사이트</div>
   <div class="tab" onclick="switchTab('chat',this)">💬 채팅 수집</div>
 </div>
 
@@ -350,10 +350,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     </div>
   </div>
 
-  <!-- 방송 보조 -->
+  <!-- 사이트 -->
   <div id="tab-tools" class="tab-content">
     <div class="section-header">
-      <div class="section-title">방송 보조 사이트</div>
+      <div class="section-title">사이트 사이트</div>
       <button class="ct-new" onclick="openModal('tool-modal')">＋ 사이트 추가</button>
     </div>
     <div id="tools-list"><div class="loading">불러오는 중...</div></div>
@@ -603,7 +603,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
-<!-- 방송 보조 추가 -->
+<!-- 사이트 추가 -->
 <div class="modal-bg" id="tool-modal">
   <div class="modal">
     <h3>🔗 사이트 추가</h3>
@@ -617,7 +617,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
-<!-- 방송 보조 수정 -->
+<!-- 사이트 수정 -->
 <div class="modal-bg" id="tool-detail-modal">
   <div class="modal">
     <h3>🔗 사이트 수정</h3>
@@ -975,7 +975,7 @@ window.deleteContent=async()=>{
   await deleteDoc(doc(db,'contents',currentContentId)); closeModal('content-detail-modal'); loadContents();
 };
 
-// ── 방송 보조 ──
+// ── 사이트 ──
 let tools=[], currentToolId=null;
 async function loadTools(){
   const snap=await getDocs(query(collection(db,'tools'),orderBy('createdAt','asc')));
