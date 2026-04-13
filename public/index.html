@@ -160,6 +160,47 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .loading{text-align:center;padding:48px;color:var(--text2);font-size:14px}
 .empty-state{text-align:center;padding:48px 20px;color:var(--text2);font-size:14px;border:2px dashed var(--border2);border-radius:var(--radius)}
 .empty-icon{font-size:36px;margin-bottom:12px;opacity:.4}
+
+/* ── 모바일 반응형 ── */
+@media (max-width: 768px) {
+  .header { padding: 10px 14px; }
+  .header-left img { width: 36px; height: 36px; }
+  .header-left h1 { font-size: 16px; }
+  .header-left p { font-size: 10px; }
+  .tabs { padding: 0 10px; gap: 0; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 10px 12px; font-size: 12px; flex-shrink: 0; }
+  .tab-label { display: none; }
+  .tab-icon { font-size: 18px; }
+  .main { padding: 14px; }
+  /* 채팅 탭 모바일 - 세로 레이아웃 */
+  #tab-chat > div[style*="grid-template-columns"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  /* 채팅 로그 높이 모바일 */
+  #chat-log {
+    height: 300px !important;
+    min-height: 200px !important;
+  }
+  /* 참여자/후원 패널 높이 모바일 */
+  #stat-top { max-height: 200px; overflow-y: auto; }
+  #stat-done-list { max-height: 200px; overflow-y: auto; }
+  #stat-mission-list { max-height: 150px; overflow-y: auto; }
+  /* 버튼 줄바꿈 */
+  .chat-btn { font-size: 11px; padding: 6px 10px; }
+  /* 컨텐츠/방송보조 카드 */
+  .card-grid { grid-template-columns: 1fr !important; }
+  /* 모달 */
+  .modal { margin: 10px; max-height: 90vh; overflow-y: auto; }
+  /* 라이브 배너 */
+  .live-banner { padding: 10px 14px; font-size: 13px; }
+}
+@media (max-width: 480px) {
+  .tab-label { display: none; }
+  .tab { padding: 10px; }
+}
 </style>
 </head>
 <body>
