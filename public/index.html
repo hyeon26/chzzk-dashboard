@@ -1687,7 +1687,28 @@ async function loadClips(reset=false){
         if(meta && meta.chunks > 0){
           for(let i = 0; i < meta.chunks; i++){
             const chunk = chunkDocs[`chunk_${i}`];
-            if(chunk) items.push(...chunk.clips);
+            if(!chunk) continue;
+            // SDK로 읽힌 경우 (clips가 배열)
+            if(Array.isArray(chunk.clips)){
+              items.push(...chunk.clips);
+            }
+            // REST API로 저장된 경우 (arrayValue 구조)
+            else if(chunk.clips?.arrayValue?.values){
+              const parsed = chunk.clips.arrayValue.values.map(v => {
+                const f = v.mapValue.fields;
+                return {
+                  type: f.type?.stringValue,
+                  id: f.id?.stringValue,
+                  title: f.title?.stringValue,
+                  thumb: f.thumb?.stringValue || null,
+                  duration: f.duration?.integerValue != null ? Number(f.duration.integerValue) : null,
+                  views: Number(f.views?.integerValue || 0),
+                  date: f.date?.stringValue,
+                  adult: f.adult?.booleanValue || false
+                };
+              });
+              items.push(...parsed);
+            }
           }
         }
       } catch(e){ console.log('Firebase 캐시 실패:', e.message); }
