@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>첫째와둘째 – 실시간 투표</title>
+<link rel="icon" type="image/png" href="/logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -29,59 +30,59 @@ body::before{
   pointer-events:none;z-index:0;
 }
 
-.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:32px 20px 60px}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:36px 26px 80px}
 
 /* 헤더 */
-.header{text-align:center;margin-bottom:40px}
-.header-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(91,74,232,.15);border:1px solid rgba(91,74,232,.3);font-size:12px;font-weight:700;color:var(--accent2);letter-spacing:.5px;margin-bottom:14px}
-.live-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;animation:blink 1.2s infinite}
+.header{text-align:center;margin-bottom:40px;position:relative;padding-top:56px}
+.header-badge{position:absolute;top:0;left:0;display:inline-flex;align-items:center;gap:10px;padding:9px 16px;border-radius:20px;background:rgba(91,74,232,.15);border:1px solid rgba(91,74,232,.3);font-size:16px;font-weight:800;color:var(--accent2);letter-spacing:.4px}
+.brand-logo{width:26px;height:26px;border-radius:7px;object-fit:cover;display:block}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.header h1{font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px}
-.header p{font-size:14px;color:var(--text2)}
+.header h1{font-size:44px;font-weight:900;letter-spacing:-.7px;margin-bottom:10px}
+.header p{font-size:22px;color:var(--text2)}
 
 /* 상태 바 */
-.status-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:24px;gap:12px;flex-wrap:wrap}
+.status-bar{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:28px;gap:16px;flex-wrap:wrap}
 .status-left{display:flex;align-items:center;gap:10px}
-.ws-dot{width:9px;height:9px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
-.ws-dot.on{background:#10b981;box-shadow:0 0 8px #10b981;animation:blink 1.4s infinite}
+.ws-dot{width:14px;height:14px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
+.ws-dot.on{background:#10b981;box-shadow:0 0 12px #10b981;animation:blink 1.4s infinite}
 .ws-dot.err{background:#ef4444}
-#ws-label{font-size:13px;font-weight:600;color:var(--text2)}
+#ws-label{font-size:18px;font-weight:700;color:var(--text2)}
 .status-right{display:flex;gap:8px;flex-wrap:wrap}
 .status-right.center{justify-content:center;width:100%}
 
 /* 버튼 공통 */
-.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;border:none;transition:opacity .15s,transform .1s;letter-spacing:.2px}
+.btn{padding:12px 22px;border-radius:10px;font-size:18px;font-weight:800;font-family:inherit;cursor:pointer;border:none;transition:opacity .15s,transform .1s;letter-spacing:.2px}
 .btn:hover{opacity:.85}.btn:active{transform:scale(.97)}
 .btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(91,74,232,.4)}
 .btn-danger{background:#ef4444;color:#fff}
 .btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 
 /* 설정 카드 */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:20px;box-shadow:var(--shadow)}
-.card-title{font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:24px;box-shadow:var(--shadow)}
+.card-title{font-size:20px;font-weight:800;color:var(--text3);letter-spacing:.4px;margin-bottom:18px}
 
 /* 항목 입력 */
-.option-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.option-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.option-input{flex:1;padding:9px 13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.option-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.option-num{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.option-input{flex:1;padding:14px 16px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;font-family:inherit;outline:none;transition:border-color .15s}
 .option-input:focus{border-color:var(--accent)}
 .option-input::placeholder{color:var(--text3)}
-.btn-remove-opt{width:28px;height:28px;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--text3);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.btn-remove-opt{width:34px;height:34px;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--text3);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
 .btn-remove-opt:hover{background:#ef4444;border-color:#ef4444;color:#fff}
 
 /* 통계 */
 .stat-row{display:flex;gap:16px;margin-bottom:24px}
 .stat-box{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
-.stat-num{font-size:28px;font-weight:900;color:var(--text)}
-.stat-label{font-size:11px;color:var(--text3);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.stat-num{font-size:44px;font-weight:900;color:var(--text)}
+.stat-label{font-size:16px;color:var(--text3);margin-top:6px;font-weight:700;letter-spacing:.5px}
 
 /* 투표 결과 */
 .vote-item{margin-bottom:18px}
 .vote-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
-.vote-item-name{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
-.vote-badge{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.vote-count{font-size:13px;font-weight:700;color:var(--text2)}
-.vote-bar-wrap{height:10px;background:var(--surface2);border-radius:20px;overflow:hidden;position:relative}
+.vote-item-name{font-size:22px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:10px}
+.vote-badge{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.vote-count{font-size:19px;font-weight:800;color:var(--text2)}
+.vote-bar-wrap{height:14px;background:var(--surface2);border-radius:20px;overflow:hidden;position:relative}
 .vote-bar{height:100%;border-radius:20px;transition:width .5s cubic-bezier(.4,0,.2,1);min-width:0}
 .vote-pct{font-size:12px;color:var(--text3);margin-top:4px;text-align:right}
 
@@ -96,14 +97,14 @@ body::before{
 .feed::-webkit-scrollbar{width:4px}.feed::-webkit-scrollbar-thumb{background:var(--text3);border-radius:4px}
 
 .voter-list-wrap{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
-.voter-list-title{font-size:12px;color:var(--text2);margin-bottom:10px}
+.voter-list-title{font-size:16px;color:var(--text2);margin-bottom:12px}
 .voter-list{display:flex;flex-wrap:wrap;gap:8px}
-.voter-chip{padding:6px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:12px;color:var(--text)}
+.voter-chip{padding:8px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:15px;color:var(--text)}
 .vote-item{cursor:pointer}
 
 /* 투표 진행 애니메이션 */
 .ballot-stage{position:relative;height:220px;border-radius:12px;background:linear-gradient(180deg,rgba(124,110,240,.18),rgba(124,110,240,.04));overflow:hidden;border:1px solid var(--border)}
-.ballot-hint{font-size:12px;color:var(--text2);margin-top:10px;text-align:center}
+.ballot-hint{font-size:16px;color:var(--text2);margin-top:14px;text-align:center}
 .ballot{
   position:absolute;
   top:50%;
@@ -142,8 +143,11 @@ body::before{
 
 /* 반응형 */
 @media(max-width:480px){
-  .header h1{font-size:22px}
-  .stat-num{font-size:22px}
+  .header{padding-top:0}
+  .header-badge{position:static;margin:0 auto 14px auto}
+  .header h1{font-size:30px}
+  .header p{font-size:16px}
+  .stat-num{font-size:28px}
   .wrap{padding:20px 14px 50px}
 }
 </style>
@@ -153,7 +157,7 @@ body::before{
 
   <!-- 헤더 -->
   <div class="header">
-    <div class="header-badge"><div class="live-dot"></div> 첫째와둘째</div>
+    <div class="header-badge"><img class="brand-logo" src="/logo.png" alt="첫째와둘째 로고"/>첫째와둘째</div>
     <h1>🗳 실시간 채팅 투표</h1>
     <p>채팅창에 <strong>!투표숫자</strong> 또는 <strong>!투표 숫자</strong> 를 입력하세요</p>
   </div>
