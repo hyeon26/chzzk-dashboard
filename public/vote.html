@@ -214,7 +214,7 @@ body::before{
       <div id="status-right" style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-primary" id="btn-start" onclick="startVote()" style="padding:8px 16px;font-size:15px">▶ 투표 시작</button>
         <button class="btn btn-ghost" id="btn-reset" onclick="resetVote()" style="padding:8px 16px;font-size:15px">🗑 초기화</button>
-        <button class="btn btn-danger" id="btn-end" onclick="endVote()" style="display:none;padding:8px 16px;font-size:15px">⏹ 투표 중지</button>
+        <button class="btn btn-danger" id="btn-end" onclick="endVote()" style="display:none;padding:8px 16px;font-size:15px">⏹ 투표 종료</button>
       </div>
     </div>
     <input id="vote-title-input" class="vote-title-input" placeholder="투표 제목을 입력하세요" autocomplete="off"/>
@@ -387,7 +387,7 @@ function endVote(){
   voteRunning=false; voteEnded=true;
   updateVoteControls(); toggleVotePanels();
   // 웹소켓은 유지 (당첨자 채팅 수신용)
-  showToast('⏹ 투표 중지 · 결과를 확인하세요');
+  showToast('⏹ 투표 종료 · 결과를 확인하세요');
 }
 function resetVote(){
   voteCounts={}; voterMap={}; voteEnded=false; pileCount=0; voteStartedAt=null; winnersLog=[];
