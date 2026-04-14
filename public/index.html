@@ -1859,8 +1859,29 @@ window.fmtTime=(el)=>{ let v=el.value.replace(/[^0-9]/g,''); if(v.length>2) v=v.
 
 renderCal();
 
-// URL 해시로 초기 탭 설정
+// 호스트 감지 - cheotdool.vercel.app이면 클립 탭만 표시
 (function(){
+  const isPublic = location.hostname === 'cheotdool.vercel.app';
+  if(isPublic){
+    // 클립 탭 외 모두 숨김
+    document.querySelectorAll('.tab').forEach(tab=>{
+      if(!tab.getAttribute('onclick')?.includes("'clips'")) tab.style.display='none';
+    });
+    // 헤더 로고 서브텍스트 변경
+    const sub = document.querySelector('.logo-sub');
+    if(sub) sub.style.display='none';
+    // 클립 탭으로 강제 이동
+    const clipTab = document.querySelector(".tab[onclick*="'clips'"]");
+    if(clipTab) switchTab('clips', clipTab);
+    // switchTab에서 다른 탭 전환 차단
+    const origSwitch = window.switchTab;
+    window.switchTab = (name, el) => {
+      if(isPublic && name !== 'clips') return;
+      origSwitch(name, el);
+    };
+    return;
+  }
+  // 일반 접속: URL 해시로 초기 탭 설정
   const hash = location.pathname.replace('/','') || 'schedule';
   const tabs = ['schedule','content','tools','chat','clips'];
   const target = tabs.includes(hash) ? hash : 'schedule';
