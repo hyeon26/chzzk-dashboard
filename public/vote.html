@@ -205,7 +205,8 @@ body::before{
   </div>
 
   <div class="card" id="setup-card">
-    <div class="card-title">⚙️ 투표 항목 설정</div>
+    <input id="vote-title-input" class="vote-title-input" placeholder="투표 제목을 입력하세요" autocomplete="off"/>
+    <div class="card-title" style="margin-top:20px">항목 설정</div>
     <div id="options-wrap"></div>
     <div style="display:flex;gap:8px;margin-top:4px">
       <button class="btn btn-ghost" onclick="addOption()" style="flex:1">＋ 항목 추가</button>
@@ -221,6 +222,7 @@ body::before{
       <button class="btn btn-primary" id="btn-start" onclick="startVote()">▶ 투표 시작</button>
       <button class="btn btn-ghost" id="btn-reset" onclick="resetVote()">🗑 초기화</button>
       <button class="btn btn-danger" id="btn-end" onclick="endVote()" style="display:none">⏹ 투표 중지</button>
+      <button class="btn" id="btn-test" onclick="toggleTestMode()" style="background:#333;color:#888;border:1px solid rgba(255,255,255,.1)">🧪 테스트</button>
     </div>
   </div>
 
@@ -273,10 +275,45 @@ body::before{
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import { getFirestore, collection, addDoc, doc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+const _app = initializeApp({
+  apiKey:'AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw',
+  authDomain:'firstandsecond-b449c.firebaseapp.com',
+  projectId:'firstandsecond-b449c',
+  storageBucket:'firstandsecond-b449c.firebasestorage.app',
+  messagingSenderId:'794631097887',
+  appId:'1:794631097887:web:e03fe5f49915f4c741cf2a'
+});
+const _db = getFirestore(_app);
+
+// 컨텐츠 저장 함수
+async function saveVoteResult(title, winnersArr, startedAt){
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const startTime = startedAt ? startedAt.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '';
+  const endTime = today.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  const duration = startedAt ? `${startTime} ~ ${endTime}` : endTime;
+  const note = winnersArr.length ? `당첨자
+${winnersArr.map((n,i)=>`${i+1}. ${n}`).join('
+')}` : '';
+  await addDoc(collection(_db,'contents'),{
+    title: title||'투표',
+    date: dateStr,
+    duration,
+    note,
+    files:[],
+    createdAt: serverTimestamp()
+  });
+}
+
+window._saveVoteResult = saveVoteResult;
+
 const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
 
-let voteOptions={}, voteCounts={}, voterMap={};
+let voteOptions={}, voteCounts={}, voterMap={}, voteStartedAt=null, winnersLog=[];
 let ws=null, wsConnected=false;
 let wsReconnectTimer=null, wsAutoReconnect=true;
 let channelIdCache=null;
@@ -336,6 +373,7 @@ function toggleVotePanels(){
 function startVote(){
   applyOptions();
   voteRunning=true; voteEnded=false;
+  voteStartedAt=new Date(); winnersLog=[];
   pileCount=0; renderPile();
   updateVoteControls(); toggleVotePanels();
   document.getElementById('anim-card').scrollIntoView({behavior:'smooth',block:'center'});
@@ -348,7 +386,7 @@ function endVote(){
   showToast('⏹ 투표 중지 · 결과를 확인하세요');
 }
 function resetVote(){
-  voteCounts={}; voterMap={}; voteEnded=false; pileCount=0;
+  voteCounts={}; voterMap={}; voteEnded=false; pileCount=0; voteStartedAt=null; winnersLog=[];
   Object.keys(voteOptions).forEach(k=>{ voteCounts[k]=0; });
   renderPile(); updateStats(); renderResults(); toggleVotePanels(); closeVoterModal();
   wsAutoReconnect=true;
@@ -516,6 +554,40 @@ setInterval(()=>{ if(ws&&ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify(
 
 
 
+/* ── 테스트 모드 ── */
+let testMode=false, testTimer=null;
+const TEST_NICKS=['김철수','이영희','박민준','최수아','정하늘','강지우','윤도현','임채원','한소희','오준혁','신예진','류성민','장나연','백준서','전미래','송태양','노은별','문지호','안서연','황민재','조하린','고태경','남승연','구준표','변하은'];
+
+function toggleTestMode(){
+  testMode=!testMode;
+  const btn=document.getElementById('btn-test');
+  if(testMode){
+    btn.style.background='#2ecc71'; btn.style.color='#000'; btn.textContent='🧪 테스트 중';
+    if(!voteRunning) startVote();
+    for(let i=0;i<10;i++) setTimeout(sendTestVote, i*80);
+    testTimer=setInterval(sendTestVote, 700);
+    showToast('🧪 테스트 모드 ON');
+  } else {
+    btn.style.background='#333'; btn.style.color='#888'; btn.textContent='🧪 테스트';
+    clearInterval(testTimer);
+    showToast('🧪 테스트 모드 OFF');
+  }
+}
+
+function sendTestVote(){
+  if(!voteRunning) return;
+  const nick=TEST_NICKS[Math.floor(Math.random()*TEST_NICKS.length)];
+  const keys=Object.keys(voteOptions);
+  if(!keys.length) return;
+  const num=keys[Math.floor(Math.random()*keys.length)];
+  processVote(nick, `!투표${num}`);
+  // 당첨자 오버레이 떠있을 때 채팅 시뮬레이션
+  if(currentWinner && Math.random()<0.15){
+    const msgs=['저 있어요!','왔습니다!','감사합니다!','오 진짜요?','ㅎㅎ'];
+    addWinnerChat(msgs[Math.floor(Math.random()*msgs.length)]);
+  }
+}
+
 /* ── 투표 처리 ── */
 function processVote(nick,msg){
   if(!voteRunning) return;
@@ -659,7 +731,11 @@ let currentWinner=null;
 
 function showWinner(name){
   winnersSet.add(name);
+  winnersLog.push(name);
   currentWinner=name;
+  // Firebase 실시간 저장/업데이트
+  const voteTitle=document.getElementById('vote-title-input')?.value?.trim()||'투표';
+  if(window._upsertVoteResult) window._upsertVoteResult(voteTitle, [...winnersLog], voteStartedAt).catch(()=>{});
   const idx=raffleVoters.indexOf(name);
   if(idx>=0){
     const chip=document.getElementById(`chip-${idx}`);
