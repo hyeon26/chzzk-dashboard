@@ -1,10 +1,23 @@
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw',
+  authDomain: 'firstandsecond-b449c.firebaseapp.com',
+  projectId: 'firstandsecond-b449c',
+  storageBucket: 'firstandsecond-b449c.firebasestorage.app',
+  messagingSenderId: '794631097887',
+  appId: '1:794631097887:web:e03fe5f49915f4c741cf2a'
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
   const API_KEY = process.env.YOUTUBE_API_KEY;
-  const FIREBASE_PROJECT = 'firstandsecond-b449c';
-  const FIREBASE_API_KEY = 'AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw';
 
   const headers = {
     'User-Agent': 'Mozilla/5.0',
@@ -77,59 +90,25 @@ export default async function handler(req, res) {
     // 날짜순 정렬
     const all = [...chzzkClips, ...ytItems].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // Firestore REST API로 저장
+    // Firebase SDK로 청크 저장
     const CHUNK_SIZE = 500;
     const chunks = [];
     for (let i = 0; i < all.length; i += CHUNK_SIZE) {
       chunks.push(all.slice(i, i + CHUNK_SIZE));
     }
 
-    const firestoreBase = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
-
-    // 청크 저장
     for (let i = 0; i < chunks.length; i++) {
-      const docData = {
-        fields: {
-          clips: {
-            arrayValue: {
-              values: chunks[i].map(clip => ({
-                mapValue: {
-                  fields: {
-                    type: { stringValue: clip.type },
-                    id: { stringValue: clip.id },
-                    title: { stringValue: clip.title },
-                    thumb: clip.thumb ? { stringValue: clip.thumb } : { nullValue: null },
-                    duration: clip.duration != null ? { integerValue: clip.duration } : { nullValue: null },
-                    views: { integerValue: clip.views || 0 },
-                    date: { stringValue: clip.date },
-                    adult: { booleanValue: clip.adult || false }
-                  }
-                }
-              }))
-            }
-          },
-          updatedAt: { stringValue: new Date().toISOString() }
-        }
-      };
-
-      await fetch(`${firestoreBase}/clipCache/chunk_${i}?key=${FIREBASE_API_KEY}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(docData)
+      await setDoc(doc(db, 'clipCache', `chunk_${i}`), {
+        clips: chunks[i],
+        updatedAt: new Date().toISOString()
       });
     }
 
     // 메타 저장
-    await fetch(`${firestoreBase}/clipCache/meta?key=${FIREBASE_API_KEY}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fields: {
-          total: { integerValue: all.length },
-          chunks: { integerValue: chunks.length },
-          updatedAt: { stringValue: new Date().toISOString() }
-        }
-      })
+    await setDoc(doc(db, 'clipCache', 'meta'), {
+      total: all.length,
+      chunks: chunks.length,
+      updatedAt: new Date().toISOString()
     });
 
     res.status(200).json({ success: true, total: all.length, chunks: chunks.length });
