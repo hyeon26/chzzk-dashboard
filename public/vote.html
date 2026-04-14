@@ -345,7 +345,7 @@ function startVote(){
 function endVote(){
   voteRunning=false; voteEnded=true;
   updateVoteControls(); toggleVotePanels();
-  wsDisconnect();
+  // 웹소켓은 유지 (당첨자 채팅 수신용)
   showToast('⏹ 투표 중지 · 결과를 확인하세요');
 }
 function resetVote(){
@@ -549,6 +549,12 @@ function sendTestVote(){
   if(!keys.length) return;
   const num=keys[Math.floor(Math.random()*keys.length)];
   processVote(nick, `!투표${num}`);
+
+  // 당첨자가 있으면 가끔 채팅 시뮬레이션
+  if(currentWinner && Math.random()<0.15){
+    const testChats=['저 있어요!','왔습니다!','ㅎㅎ 당첨됐네요','감사합니다!','오 진짜요?'];
+    addWinnerChat(testChats[Math.floor(Math.random()*testChats.length)]);
+  }
 }
 
 /* ── 투표 처리 ── */
