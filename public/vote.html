@@ -66,10 +66,6 @@ body::before{
 .btn-remove-opt:hover{background:#ef4444;border-color:#ef4444;color:#fff}
 
 /* 통계 */
-.stat-row{display:flex;gap:16px;margin-bottom:24px}
-.stat-box{flex:1;background:#1e1e1e;border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:16px;text-align:center}
-.stat-num{font-size:44px;font-weight:900;color:var(--text)}
-.stat-label{font-size:16px;color:#4a4a4a;margin-top:6px;font-weight:700;letter-spacing:.5px}
 
 /* 투표 결과 */
 .vote-item{margin-bottom:18px;cursor:pointer}
@@ -241,15 +237,11 @@ body::before{
     <div class="ballot-hint">투표가 들어올 때마다 투표용지가 떨어져요</div>
   </div>
 
-  <div class="stat-row" id="stat-row">
-    <div class="stat-box">
-      <div class="stat-num" id="total-votes">0</div>
-      <div class="stat-label">총 투표수</div>
-    </div>
-  </div>
-
   <div class="card" id="results-card">
-    <div class="card-title">결과</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div class="card-title" style="margin-bottom:0">결과</div>
+      <div style="font-size:13px;font-weight:700;color:#555">총 <span id="total-votes" style="color:#888;font-size:16px;font-weight:900">0</span>표</div>
+    </div>
     <div id="results"></div>
   </div>
 
@@ -376,7 +368,6 @@ function updateVoteControls(){
 function toggleVotePanels(){
   document.getElementById('anim-card').style.display=voteRunning?'':'none';
   const show=!voteRunning&&voteEnded;
-  document.getElementById('stat-row').style.display=show?'':'none';
   document.getElementById('results-card').style.display=show?'':'none';
 }
 function startVote(){
@@ -385,7 +376,6 @@ function startVote(){
   voteStartedAt=new Date(); winnersLog=[];
   pileCount=0; renderPile();
   updateVoteControls(); toggleVotePanels();
-  document.getElementById('anim-card').scrollIntoView({behavior:'smooth',block:'center'});
   showToast('▶ 투표 진행 중');
 }
 function endVote(){
