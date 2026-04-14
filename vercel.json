@@ -7,7 +7,7 @@
   ],
   "redirects": [
     {
-      "source": "/((?!clips$|api/).*)",
+      "source": "/",
       "has": [{ "type": "host", "value": "cheotdool.vercel.app" }],
       "destination": "/__blocked__",
       "permanent": false
