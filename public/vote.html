@@ -22,14 +22,11 @@
   --shadow:0 4px 24px rgba(0,0,0,.4);
 }
 body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-
-/* 배경 효과 */
 body::before{
   content:'';position:fixed;inset:0;
   background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(91,74,232,.18),transparent);
   pointer-events:none;z-index:0;
 }
-
 .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:36px 26px 80px}
 
 /* 헤더 */
@@ -50,14 +47,14 @@ body::before{
 .status-right{display:flex;gap:8px;flex-wrap:wrap}
 .status-right.center{justify-content:center;width:100%}
 
-/* 버튼 공통 */
+/* 버튼 */
 .btn{padding:12px 22px;border-radius:10px;font-size:18px;font-weight:800;font-family:inherit;cursor:pointer;border:none;transition:opacity .15s,transform .1s;letter-spacing:.2px}
 .btn:hover{opacity:.85}.btn:active{transform:scale(.97)}
 .btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(91,74,232,.4)}
 .btn-danger{background:#ef4444;color:#fff}
 .btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 
-/* 설정 카드 */
+/* 카드 */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:24px;box-shadow:var(--shadow)}
 .card-title{font-size:20px;font-weight:800;color:var(--text3);letter-spacing:.4px;margin-bottom:18px}
 
@@ -77,27 +74,17 @@ body::before{
 .stat-label{font-size:16px;color:var(--text3);margin-top:6px;font-weight:700;letter-spacing:.5px}
 
 /* 투표 결과 */
-.vote-item{margin-bottom:18px}
+.vote-item{margin-bottom:18px;cursor:pointer}
 .vote-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
 .vote-item-name{font-size:22px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:10px}
 .vote-badge{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .vote-count{font-size:19px;font-weight:800;color:var(--text2)}
-.vote-bar-wrap{height:14px;background:var(--surface2);border-radius:20px;overflow:hidden;position:relative}
+.vote-bar-wrap{height:14px;background:var(--surface2);border-radius:20px;overflow:hidden}
 .vote-bar{height:100%;border-radius:20px;transition:width .5s cubic-bezier(.4,0,.2,1);min-width:0}
-.vote-pct{font-size:12px;color:var(--text3);margin-top:4px;text-align:right}
-
-/* 1등 강조 */
 .vote-item.first .vote-item-name{color:#fbbf24}
 .vote-item.first .vote-badge{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
 .vote-item.first .vote-bar{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
 .vote-item:not(.first) .vote-bar{background:linear-gradient(90deg,var(--accent),var(--accent2))}
-
-/* 최근 투표 피드 */
-.feed{height:160px;overflow-y:auto;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12px;font-family:monospace;line-height:1.8;color:var(--text2)}
-.feed::-webkit-scrollbar{width:4px}.feed::-webkit-scrollbar-thumb{background:var(--text3);border-radius:4px}
-
-.voter-chip{padding:8px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:15px;color:var(--text)}
-.vote-item{cursor:pointer}
 
 /* 팝업 */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:1000;padding:24px}
@@ -107,37 +94,100 @@ body::before{
 .modal-title{font-size:24px;font-weight:900;color:var(--text)}
 .modal-close{background:transparent;color:var(--text2);border:1px solid var(--border);width:42px;height:42px;border-radius:50%;font-size:26px;cursor:pointer;line-height:1}
 .modal-voters{display:flex;flex-wrap:wrap;gap:10px}
+.voter-chip{padding:8px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:15px;color:var(--text)}
 .modal-empty{color:var(--text3);font-size:18px}
 
-/* 투표 진행 애니메이션 */
-.ballot-stage{position:relative;height:220px;border-radius:12px;background:linear-gradient(180deg,rgba(124,110,240,.18),rgba(124,110,240,.04));overflow:hidden;border:1px solid var(--border)}
+/* ── 투표 애니메이션 스테이지 ── */
+.ballot-stage{
+  position:relative;
+  height:260px;
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(124,110,240,.12),rgba(124,110,240,.03));
+  overflow:hidden;
+  border:1px solid var(--border);
+}
 .ballot-hint{font-size:16px;color:var(--text2);margin-top:14px;text-align:center}
-.ballot{
+
+/* 투표함 */
+.ballot-box{
   position:absolute;
-  top:50%;
-  left:-80px;
-  width:56px;
-  height:74px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,.35);
-  background:linear-gradient(180deg,#fff,#ebe7ff);
-  box-shadow:0 8px 18px rgba(0,0,0,.25);
-  transform:translateY(-50%) rotate(-12deg);
-  animation:ballot-fly var(--dur,1.6s) ease-out forwards;
+  bottom:16px;
+  left:50%;
+  transform:translateX(-50%);
+  width:90px;
+  z-index:3;
+  pointer-events:none;
 }
-.ballot::before{
+.ballot-box-body{
+  width:90px;height:54px;
+  background:linear-gradient(160deg,#3d2fa0,#1e1560);
+  border-radius:6px 6px 4px 4px;
+  border:2px solid rgba(255,255,255,.18);
+  box-shadow:0 6px 20px rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,.35);
+}
+.ballot-box-slot{
+  width:44px;height:9px;
+  background:#110d30;
+  border-radius:5px;
+  border:2px solid rgba(255,255,255,.12);
+  margin:0 auto;
+  position:relative;top:2px;
+}
+
+/* 쌓인 투표용지 더미 */
+.pile-wrap{
+  position:absolute;
+  bottom:86px;
+  left:50%;
+  transform:translateX(-50%);
+  width:80px;height:120px;
+  z-index:2;
+  pointer-events:none;
+}
+.pile-paper{
+  position:absolute;
+  bottom:0;left:50%;
+  width:50px;height:66px;
+  border-radius:3px 3px 2px 2px;
+  background:linear-gradient(170deg,#fff,#e9e3ff);
+  border:1px solid rgba(0,0,0,.1);
+  box-shadow:0 2px 8px rgba(0,0,0,.28);
+  transform-origin:bottom center;
+}
+.pile-paper::after{
+  content:'';
+  position:absolute;
+  top:10px;left:7px;right:7px;height:2px;
+  background:rgba(91,74,232,.22);border-radius:2px;
+  box-shadow:0 5px 0 rgba(91,74,232,.14),0 10px 0 rgba(91,74,232,.08);
+}
+
+/* 날아오는 투표용지 */
+.ballot-fly{
+  position:absolute;
+  width:50px;height:66px;
+  border-radius:3px 3px 2px 2px;
+  background:linear-gradient(170deg,#fff,#e9e3ff);
+  border:1px solid rgba(0,0,0,.1);
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+  z-index:10;
+  pointer-events:none;
+  will-change:transform,top,left,opacity;
+}
+.ballot-fly::before{
   content:'🗳';
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:21px;
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
 }
-@keyframes ballot-fly{
-  0%{left:-90px;opacity:0;transform:translateY(calc(-50% + var(--y,0px))) rotate(var(--rot,-12deg)) scale(.85)}
-  20%{opacity:1}
-  100%{left:calc(100% + 20px);opacity:0;transform:translateY(calc(-50% + var(--y,0px))) rotate(calc(var(--rot,-12deg) + 18deg)) scale(1)}
+.ballot-fly::after{
+  content:'';
+  position:absolute;
+  top:10px;left:7px;right:7px;height:2px;
+  background:rgba(91,74,232,.22);border-radius:2px;
+  box-shadow:0 5px 0 rgba(91,74,232,.14),0 10px 0 rgba(91,74,232,.08);
 }
 
 /* 빈 상태 */
@@ -148,12 +198,10 @@ body::before{
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-size:13px;font-weight:600;color:var(--text);box-shadow:var(--shadow);transition:transform .3s;z-index:999;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
-/* 반응형 */
 @media(max-width:480px){
   .header{padding-top:0}
   .header-badge{position:static;margin:0 auto 14px auto}
-  .header h1{font-size:30px}
-  .header p{font-size:16px}
+  .header h1{font-size:30px}.header p{font-size:16px}
   .stat-num{font-size:28px}
   .wrap{padding:20px 14px 50px}
 }
@@ -162,14 +210,12 @@ body::before{
 <body>
 <div class="wrap">
 
-  <!-- 헤더 -->
   <div class="header">
     <div class="header-badge"><img class="brand-logo" src="/logo.png" alt="첫째와둘째 로고"/>첫째와둘째</div>
     <h1>🗳 실시간 채팅 투표</h1>
     <p>채팅창에 <strong>!투표숫자</strong> 또는 <strong>!투표 숫자</strong> 를 입력하세요</p>
   </div>
 
-  <!-- 투표 설정 -->
   <div class="card" id="setup-card">
     <div class="card-title">⚙️ 투표 항목 설정</div>
     <div id="options-wrap"></div>
@@ -178,7 +224,6 @@ body::before{
     </div>
   </div>
 
-  <!-- 연결 상태 + 시작/중지 -->
   <div class="status-bar" id="control-card">
     <div class="status-left">
       <div class="ws-dot" id="ws-dot"></div>
@@ -191,14 +236,18 @@ body::before{
     </div>
   </div>
 
-  <!-- 투표 진행 애니메이션 -->
   <div class="card" id="anim-card" style="display:none">
     <div class="card-title">🗳 투표 진행 중</div>
-    <div class="ballot-stage" id="ballot-stage"></div>
-    <div class="ballot-hint">채팅 투표가 들어올 때마다 투표용지가 날아갑니다</div>
+    <div class="ballot-stage" id="ballot-stage">
+      <div class="pile-wrap" id="pile-wrap"></div>
+      <div class="ballot-box">
+        <div class="ballot-box-slot"></div>
+        <div class="ballot-box-body">VOTE</div>
+      </div>
+    </div>
+    <div class="ballot-hint">투표가 들어올 때마다 투표용지가 투표함에 쌓여요</div>
   </div>
 
-  <!-- 통계 -->
   <div class="stat-row" id="stat-row">
     <div class="stat-box">
       <div class="stat-num" id="total-votes">0</div>
@@ -206,7 +255,6 @@ body::before{
     </div>
   </div>
 
-  <!-- 결과 -->
   <div class="card" id="results-card">
     <div class="card-title">결과</div>
     <div id="results"></div>
@@ -214,7 +262,6 @@ body::before{
 
 </div>
 
-<!-- 닉네임 팝업 -->
 <div class="modal" id="voter-modal" onclick="onModalBackdrop(event)">
   <div class="modal-box">
     <div class="modal-head">
@@ -225,317 +272,252 @@ body::before{
   </div>
 </div>
 
-<!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
 <script>
 const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
 
-// ── 상태 ──
-let voteOptions = {};   // { '1': '항목명', '2': '항목명', ... }
-let voteCounts  = {};   // { '1': 0, '2': 0, ... }
-let voterMap    = {};   // { 닉네임: '1' } 중복 방지
-let ws = null, wsConnected = false;
-let wsReconnectTimer = null, wsAutoReconnect = true;
-let channelIdCache = null;
-let voteRunning = false;
-let voteEnded = false;
-let selectedOptionKey = null;
+let voteOptions={}, voteCounts={}, voterMap={};
+let ws=null, wsConnected=false;
+let wsReconnectTimer=null, wsAutoReconnect=true;
+let channelIdCache=null;
+let voteRunning=false, voteEnded=false;
+let pileCount=0;
 
-// ── 초기 항목 (2개) ──
-let optionRows = [{id:1,label:''},{id:2,label:''}];
-let optRowId = 3;
+let optionRows=[{id:1,label:''},{id:2,label:''}];
+let optRowId=3;
 
+/* ── 항목 설정 ── */
 function renderOptionInputs(){
-  const wrap = document.getElementById('options-wrap');
-  wrap.innerHTML = optionRows.map((o,i) => `
+  document.getElementById('options-wrap').innerHTML=optionRows.map((o,i)=>`
     <div class="option-row">
       <div class="option-num">${i+1}</div>
       <input class="option-input" id="opt-${o.id}" value="${o.label}" placeholder="항목 이름"/>
-      ${optionRows.length > 1 ? `<button class="btn-remove-opt" onclick="removeOption(${o.id})">×</button>` : '<div style="width:28px"></div>'}
-    </div>
-  `).join('');
+      ${optionRows.length>1?`<button class="btn-remove-opt" onclick="removeOption(${o.id})">×</button>`:'<div style="width:34px"></div>'}
+    </div>`).join('');
 }
-
 function syncOptionInputs(){
-  optionRows.forEach(o => {
-    const input = document.getElementById(`opt-${o.id}`);
-    if(input) o.label = input.value;
-  });
+  optionRows.forEach(o=>{ const el=document.getElementById(`opt-${o.id}`); if(el) o.label=el.value; });
 }
-
 function addOption(){
   syncOptionInputs();
-  optionRows.push({id:optRowId++, label:''});
+  optionRows.push({id:optRowId++,label:''});
   renderOptionInputs();
 }
-
 function removeOption(id){
   if(optionRows.length<=1) return;
   syncOptionInputs();
-  optionRows = optionRows.filter(o=>o.id!==id);
+  optionRows=optionRows.filter(o=>o.id!==id);
   renderOptionInputs();
 }
-
 function applyOptions(){
-  // 현재 입력값 저장
-  optionRows.forEach((o,i) => {
-    o.label = document.getElementById(`opt-${o.id}`)?.value?.trim() || '';
-  });
-  // voteOptions 업데이트
-  voteOptions = {};
-  optionRows.forEach((o,i) => { voteOptions[String(i+1)] = o.label || String(i+1); });
-  // 기존 카운트 보존하면서 새 항목 반영
-  const newCounts = {};
-  Object.keys(voteOptions).forEach(k => { newCounts[k] = voteCounts[k] || 0; });
-  voteCounts = newCounts;
+  optionRows.forEach(o=>{ o.label=document.getElementById(`opt-${o.id}`)?.value?.trim()||''; });
+  voteOptions={};
+  optionRows.forEach((o,i)=>{ voteOptions[String(i+1)]=o.label||String(i+1); });
+  const nc={};
+  Object.keys(voteOptions).forEach(k=>{ nc[k]=voteCounts[k]||0; });
+  voteCounts=nc;
   renderResults();
-  showToast('✅ 항목 적용 완료!');
 }
 
+/* ── 투표 제어 ── */
 function updateVoteControls(){
-  const btnStart = document.getElementById('btn-start');
-  const btnEnd = document.getElementById('btn-end');
-  const btnReset = document.getElementById('btn-reset');
-  const right = document.getElementById('status-right');
-  btnStart.style.display = voteRunning ? 'none' : '';
-  btnReset.style.display = voteRunning ? 'none' : '';
-  btnEnd.style.display = voteRunning ? '' : 'none';
-  right.classList.toggle('center', voteRunning);
+  document.getElementById('btn-start').style.display=voteRunning?'none':'';
+  document.getElementById('btn-reset').style.display=voteRunning?'none':'';
+  document.getElementById('btn-end').style.display=voteRunning?'':'none';
+  document.getElementById('status-right').classList.toggle('center',voteRunning);
 }
-
 function toggleVotePanels(){
-  const animCard = document.getElementById('anim-card');
-  const statRow = document.getElementById('stat-row');
-  const resultsCard = document.getElementById('results-card');
-  animCard.style.display = voteRunning ? '' : 'none';
-  const showResultPanels = !voteRunning && voteEnded;
-  statRow.style.display = showResultPanels ? '' : 'none';
-  resultsCard.style.display = showResultPanels ? '' : 'none';
+  document.getElementById('anim-card').style.display=voteRunning?'':'none';
+  const show=!voteRunning&&voteEnded;
+  document.getElementById('stat-row').style.display=show?'':'none';
+  document.getElementById('results-card').style.display=show?'':'none';
 }
-
-function launchBallots(count=1){
-  const stage = document.getElementById('ballot-stage');
-  for(let i=0;i<count;i++){
-    const paper = document.createElement('div');
-    paper.className = 'ballot';
-    paper.style.setProperty('--y', `${Math.floor(Math.random()*140)-70}px`);
-    paper.style.setProperty('--rot', `${Math.floor(Math.random()*30)-15}deg`);
-    paper.style.setProperty('--dur', `${1.3 + Math.random()*0.8}s`);
-    paper.style.animationDelay = `${i*0.07}s`;
-    stage.appendChild(paper);
-    setTimeout(()=>paper.remove(), 2400);
-  }
-}
-
 function startVote(){
   applyOptions();
-  voteRunning = true;
-  voteEnded = false;
-  updateVoteControls();
-  toggleVotePanels();
-  document.getElementById('anim-card').scrollIntoView({behavior:'smooth', block:'center'});
+  voteRunning=true; voteEnded=false;
+  pileCount=0; renderPile();
+  updateVoteControls(); toggleVotePanels();
+  document.getElementById('anim-card').scrollIntoView({behavior:'smooth',block:'center'});
   showToast('▶ 투표 진행 중');
 }
-
 function endVote(){
-  voteRunning = false;
-  voteEnded = true;
-  updateVoteControls();
-  toggleVotePanels();
+  voteRunning=false; voteEnded=true;
+  updateVoteControls(); toggleVotePanels();
   wsDisconnect();
   showToast('⏹ 투표 중지 · 결과를 확인하세요');
 }
-
-// ── 웹소켓 ──
-async function wsConnect(){
-  try {
-    setWsStatus('connecting');
-    const liveRes = await fetch('/api/live-status').then(r=>r.json());
-    if(!liveRes?.content?.chatChannelId) throw new Error('방송 중이 아니에요');
-    channelIdCache = liveRes.content.chatChannelId;
-    const tokenRes = await fetch(`/api/access-token?channelId=${encodeURIComponent(channelIdCache)}`).then(r=>r.json());
-    const accessToken = tokenRes?.content?.accessToken || '';
-    ws = new WebSocket('wss://kr-ss1.chat.naver.com/chat');
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ver:'2',cmd:100,svcid:'game',cid:channelIdCache,bdy:{uid:null,devType:2001,accTkn:accessToken,auth:'READ'},tid:1}));
-      setWsStatus(true);
-    };
-    ws.onmessage = onWsMsg;
-    ws.onclose = () => {
-      setWsStatus(false);
-      if(wsAutoReconnect && channelIdCache) wsReconnectTimer = setTimeout(wsConnect, 5000);
-    };
-    ws.onerror = () => setWsStatus('err');
-  } catch(e) {
-    setWsStatus('err');
-    showToast('⚠️ ' + e.message);
-  }
-}
-
-function wsDisconnect(){
-  wsAutoReconnect = false;
-  clearTimeout(wsReconnectTimer);
-  if(ws) ws.close();
-  setWsStatus(false);
-}
-
-function onWsMsg(e){
-  try {
-    const msg = JSON.parse(e.data);
-    if(msg.cmd === 93101 && msg.bdy){
-      const chats = Array.isArray(msg.bdy) ? msg.bdy : [msg.bdy];
-      chats.forEach(chat => {
-        if(!chat.msg || !chat.profile) return;
-        const profile = typeof chat.profile==='string' ? JSON.parse(chat.profile) : chat.profile;
-        const nick = profile.nickname || '익명';
-        processVote(nick, chat.msg.trim());
-      });
-    }
-    if(msg.cmd === 0) ws.send(JSON.stringify({ver:'2',cmd:10000}));
-  } catch(err){}
-}
-
-setInterval(()=>{
-  if(ws && ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({ver:'2',cmd:10000}));
-},20000);
-
-// ── 투표 처리 ──
-function processVote(nick, msg){
-  if(!voteRunning) return;
-  // !투표1 또는 !투표 1 패턴
-  const m = msg.match(/^!투표\s*(\d+)$/);
-  if(!m) return;
-  const num = m[1];
-
-  // 유효한 번호인지 확인
-  if(!voteOptions[num] && Object.keys(voteOptions).length > 0) return;
-
-  // 중복 투표 처리
-  const prev = voterMap[nick];
-  if(prev === num) return; // 같은 번호 중복
-  if(prev) {
-    // 이전 투표 취소
-    voteCounts[prev] = Math.max(0, (voteCounts[prev]||0) - 1);
-  }
-
-  voterMap[nick] = num;
-  voteCounts[num] = (voteCounts[num]||0) + 1;
-
-  updateStats();
-  renderResults();
-  launchBallots(1);
-}
-
-function updateStats(){
-  document.getElementById('total-votes').textContent = Object.values(voteCounts).reduce((s,v)=>s+v,0);
-}
-
-function renderResults(){
-  const el = document.getElementById('results');
-  const keys = Object.keys(voteOptions).length > 0 ? Object.keys(voteOptions) : Object.keys(voteCounts);
-  if(!keys.length){
-    el.innerHTML = `<div class="empty"><div class="empty-icon">🗳</div><div>항목을 설정하고 연결하면<br>실시간으로 집계돼요</div></div>`;
-    return;
-  }
-  const total = Object.values(voteCounts).reduce((s,v)=>s+v,0)||1;
-  // 정렬 (득표 많은 순)
-  const sorted = keys.slice().sort((a,b)=>(voteCounts[b]||0)-(voteCounts[a]||0));
-  const maxVotes = voteCounts[sorted[0]] || 0;
-
-  const voteItemsHtml = keys.map((k,i) => {
-    const cnt = voteCounts[k] || 0;
-    const pct = Math.round(cnt/total*100);
-    const isFirst = cnt > 0 && cnt === maxVotes;
-    const colors = ['#5b4ae8','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
-    return `
-      <div class="vote-item${isFirst?' first':''}" onclick="showOptionVoters('${k}')">
-        <div class="vote-item-header">
-          <div class="vote-item-name">
-            <div class="vote-badge" style="${!isFirst?`background:${colors[i%colors.length]||'var(--accent)'}`:''}">${k}</div>
-            ${voteOptions[k] && voteOptions[k]!==k ? voteOptions[k] : ''}
-          </div>
-          <div class="vote-count">${cnt}표 (${pct}%)</div>
-        </div>
-        <div class="vote-bar-wrap">
-          <div class="vote-bar" style="width:${pct}%;${!isFirst?`background:${colors[i%colors.length]||'var(--accent)'}`:''}" ></div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  el.innerHTML = voteItemsHtml;
-}
-
-function showOptionVoters(optionKey){
-  selectedOptionKey = optionKey;
-  const modal = document.getElementById('voter-modal');
-  const title = document.getElementById('modal-title');
-  const list = document.getElementById('modal-voters');
-  const label = voteOptions[optionKey] || `${optionKey}번`;
-  const voters = Object.keys(voterMap).filter(nick => voterMap[nick] === optionKey);
-  title.textContent = `${optionKey}번 ${label}`;
-  if(!voters.length){
-    list.innerHTML = `<div class="modal-empty">투표 인원 없음</div>`;
-  } else {
-    list.innerHTML = voters.map(nick => `<span class="voter-chip">${nick}</span>`).join('');
-  }
-  modal.classList.add('show');
-}
-
-function closeVoterModal(){
-  document.getElementById('voter-modal').classList.remove('show');
-}
-
-function onModalBackdrop(e){
-  if(e.target.id === 'voter-modal') closeVoterModal();
-}
-
 function resetVote(){
-  voteCounts = {};
-  voterMap = {};
-  voteEnded = false;
-  selectedOptionKey = null;
+  voteCounts={}; voterMap={}; voteEnded=false; pileCount=0;
   Object.keys(voteOptions).forEach(k=>{ voteCounts[k]=0; });
-  updateStats();
-  renderResults();
-  toggleVotePanels();
-  closeVoterModal();
-  wsAutoReconnect = true;
+  renderPile(); updateStats(); renderResults(); toggleVotePanels(); closeVoterModal();
+  wsAutoReconnect=true;
   if(!wsConnected) wsConnect();
   showToast('🗑 초기화 완료');
 }
 
-function setWsStatus(state){
-  const dot = document.getElementById('ws-dot');
-  const label = document.getElementById('ws-label');
-  if(state === true){
-    wsConnected = true; wsAutoReconnect = true;
-    dot.style.background = '';
-    dot.className='ws-dot on'; label.textContent='채팅 연결됨';
-  } else if(state === 'connecting'){
-    dot.className='ws-dot'; dot.style.background='#f59e0b';
-    label.textContent='연결 중...';
-  } else if(state === 'err'){
-    wsConnected = false;
-    dot.className='ws-dot err'; label.textContent='연결 실패';
-    voteRunning = false;
-    updateVoteControls();
-    toggleVotePanels();
-  } else {
-    wsConnected = false;
-    dot.className='ws-dot'; dot.style.background=''; 
-    label.textContent='연결 안됨';
+/* ── 투표용지 더미 렌더 ── */
+function renderPile(){
+  const wrap=document.getElementById('pile-wrap');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  const layers=Math.min(pileCount,12);
+  for(let i=0;i<layers;i++){
+    const p=document.createElement('div');
+    p.className='pile-paper';
+    const angle=((i*41)%22)-11;
+    const dx=((i*29)%18)-9;
+    const dy=-(i*2.2);
+    p.style.cssText=`left:50%;transform:translateX(calc(-50% + ${dx}px)) rotate(${angle}deg);bottom:${dy}px;z-index:${i};`;
+    wrap.appendChild(p);
   }
 }
 
-function showToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2200);
+/* ── 투표용지 날아오기 (오른쪽 밖 → 투표함 슬롯) ── */
+function launchBallot(){
+  const stage=document.getElementById('ballot-stage');
+  if(!stage) return;
+
+  const sw=stage.offsetWidth, sh=stage.offsetHeight;
+
+  // 목표: 투표함 슬롯 위치 (가운데, 슬롯 높이에 맞춤)
+  const targetX=sw/2-25;       // 용지 너비 50px → 중앙 정렬
+  const targetY=sh-86-10;      // bottom:86px(pile-wrap) 바로 위
+
+  // 시작: 오른쪽 완전히 밖, Y는 랜덤
+  const startX=sw+20;
+  const startY=Math.random()*(sh*0.5)+20;
+
+  const paper=document.createElement('div');
+  paper.className='ballot-fly';
+  paper.style.cssText=`top:${startY}px;left:${startX}px;opacity:0;`;
+  stage.appendChild(paper);
+
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const dur=650+Math.random()*250;
+    paper.style.transition=`left ${dur}ms cubic-bezier(.25,0,.4,1), top ${dur}ms cubic-bezier(.25,0,.4,1), transform ${dur}ms ease, opacity 150ms ease`;
+    paper.style.opacity='1';
+    paper.style.top=`${targetY}px`;
+    paper.style.left=`${targetX}px`;
+    paper.style.transform=`rotate(${Math.random()*10-5}deg)`;
+
+    // 슬롯 도착 후 → 빨려들어가는 효과 후 더미에 추가
+    setTimeout(()=>{
+      paper.style.transition='transform 140ms ease, opacity 140ms ease';
+      paper.style.transform='scale(.35) translateY(18px)';
+      paper.style.opacity='0';
+      setTimeout(()=>{
+        paper.remove();
+        pileCount++;
+        renderPile();
+      },140);
+    }, dur+30);
+  }));
 }
 
-// ── 초기화 ──
+/* ── 웹소켓 ── */
+async function wsConnect(){
+  try {
+    setWsStatus('connecting');
+    const liveRes=await fetch('/api/live-status').then(r=>r.json());
+    if(!liveRes?.content?.chatChannelId) throw new Error('방송 중이 아니에요');
+    channelIdCache=liveRes.content.chatChannelId;
+    const tokenRes=await fetch(`/api/access-token?channelId=${encodeURIComponent(channelIdCache)}`).then(r=>r.json());
+    const accessToken=tokenRes?.content?.accessToken||'';
+    ws=new WebSocket('wss://kr-ss1.chat.naver.com/chat');
+    ws.onopen=()=>{
+      ws.send(JSON.stringify({ver:'2',cmd:100,svcid:'game',cid:channelIdCache,bdy:{uid:null,devType:2001,accTkn:accessToken,auth:'READ'},tid:1}));
+      setWsStatus(true);
+    };
+    ws.onmessage=onWsMsg;
+    ws.onclose=()=>{ setWsStatus(false); if(wsAutoReconnect&&channelIdCache) wsReconnectTimer=setTimeout(wsConnect,5000); };
+    ws.onerror=()=>setWsStatus('err');
+  } catch(e){ setWsStatus('err'); showToast('⚠️ '+e.message); }
+}
+function wsDisconnect(){
+  wsAutoReconnect=false; clearTimeout(wsReconnectTimer);
+  if(ws) ws.close(); setWsStatus(false);
+}
+function onWsMsg(e){
+  try {
+    const msg=JSON.parse(e.data);
+    if(msg.cmd===93101&&msg.bdy){
+      const chats=Array.isArray(msg.bdy)?msg.bdy:[msg.bdy];
+      chats.forEach(chat=>{
+        if(!chat.msg||!chat.profile) return;
+        const profile=typeof chat.profile==='string'?JSON.parse(chat.profile):chat.profile;
+        processVote(profile.nickname||'익명',chat.msg.trim());
+      });
+    }
+    if(msg.cmd===0) ws.send(JSON.stringify({ver:'2',cmd:10000}));
+  } catch(err){}
+}
+setInterval(()=>{ if(ws&&ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({ver:'2',cmd:10000})); },20000);
+
+/* ── 투표 처리 ── */
+function processVote(nick,msg){
+  if(!voteRunning) return;
+  const m=msg.match(/^!투표\s*(\d+)$/);
+  if(!m) return;
+  const num=m[1];
+  if(!voteOptions[num]&&Object.keys(voteOptions).length>0) return;
+  const prev=voterMap[nick];
+  if(prev===num) return;
+  if(prev) voteCounts[prev]=Math.max(0,(voteCounts[prev]||0)-1);
+  voterMap[nick]=num;
+  voteCounts[num]=(voteCounts[num]||0)+1;
+  updateStats(); renderResults();
+  launchBallot();
+}
+function updateStats(){
+  document.getElementById('total-votes').textContent=Object.values(voteCounts).reduce((s,v)=>s+v,0);
+}
+function renderResults(){
+  const el=document.getElementById('results');
+  const keys=Object.keys(voteOptions).length>0?Object.keys(voteOptions):Object.keys(voteCounts);
+  if(!keys.length){ el.innerHTML=`<div class="empty"><div class="empty-icon">🗳</div><div>항목을 설정하고 투표를 시작하세요</div></div>`; return; }
+  const total=Object.values(voteCounts).reduce((s,v)=>s+v,0)||1;
+  const sorted=keys.slice().sort((a,b)=>(voteCounts[b]||0)-(voteCounts[a]||0));
+  const maxV=voteCounts[sorted[0]]||0;
+  const colors=['#5b4ae8','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
+  el.innerHTML=keys.map((k,i)=>{
+    const cnt=voteCounts[k]||0, pct=Math.round(cnt/total*100), isFirst=cnt>0&&cnt===maxV;
+    return `<div class="vote-item${isFirst?' first':''}" onclick="showOptionVoters('${k}')">
+      <div class="vote-item-header">
+        <div class="vote-item-name">
+          <div class="vote-badge" style="${!isFirst?`background:${colors[i%colors.length]}`:''}">${k}</div>
+          ${voteOptions[k]&&voteOptions[k]!==k?voteOptions[k]:''}
+        </div>
+        <div class="vote-count">${cnt}표 (${pct}%)</div>
+      </div>
+      <div class="vote-bar-wrap"><div class="vote-bar" style="width:${pct}%;${!isFirst?`background:${colors[i%colors.length]}`:''}" ></div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ── 투표자 팝업 ── */
+function showOptionVoters(key){
+  const voters=Object.keys(voterMap).filter(n=>voterMap[n]===key);
+  const label=voteOptions[key]||`${key}번`;
+  document.getElementById('modal-title').textContent=`${key}번 ${label}`;
+  document.getElementById('modal-voters').innerHTML=voters.length
+    ?voters.map(n=>`<span class="voter-chip">${n}</span>`).join('')
+    :`<div class="modal-empty">투표 인원 없음</div>`;
+  document.getElementById('voter-modal').classList.add('show');
+}
+function closeVoterModal(){ document.getElementById('voter-modal').classList.remove('show'); }
+function onModalBackdrop(e){ if(e.target.id==='voter-modal') closeVoterModal(); }
+
+function setWsStatus(state){
+  const dot=document.getElementById('ws-dot'), label=document.getElementById('ws-label');
+  if(state===true){ wsConnected=true;wsAutoReconnect=true; dot.style.background=''; dot.className='ws-dot on'; label.textContent='채팅 연결됨'; }
+  else if(state==='connecting'){ dot.className='ws-dot'; dot.style.background='#f59e0b'; label.textContent='연결 중...'; }
+  else if(state==='err'){ wsConnected=false; dot.className='ws-dot err'; label.textContent='연결 실패'; voteRunning=false; updateVoteControls(); toggleVotePanels(); }
+  else { wsConnected=false; dot.className='ws-dot'; dot.style.background=''; label.textContent='연결 안됨'; }
+}
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+// 초기화
 renderOptionInputs();
 applyOptions();
 renderResults();
