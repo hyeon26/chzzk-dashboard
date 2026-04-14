@@ -38,14 +38,9 @@ body::before{
 .header p{font-size:22px;color:#888}
 
 /* 상태 바 */
-.status-bar{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:#1a1a1a;border:1px solid rgba(255,255,255,.07);border-radius:var(--radius);margin-bottom:28px;gap:16px;flex-wrap:wrap}
-.status-left{display:flex;align-items:center;gap:10px}
 .ws-dot{width:14px;height:14px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
 .ws-dot.on{background:#2ecc71;box-shadow:0 0 10px #2ecc71;animation:blink 1.4s infinite}
 .ws-dot.err{background:#ef4444}
-#ws-label{font-size:18px;font-weight:700;color:#888}
-.status-right{display:flex;gap:8px;flex-wrap:wrap}
-.status-right.center{justify-content:center;width:100%}
 
 /* 버튼 */
 .btn{padding:12px 22px;border-radius:10px;font-size:18px;font-weight:800;font-family:inherit;cursor:pointer;border:none;transition:opacity .15s,transform .1s;letter-spacing:.2px}
@@ -218,23 +213,23 @@ body::before{
   </div>
 
   <div class="card" id="setup-card">
+    <!-- 상단: 상태 + 버튼 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="ws-dot" id="ws-dot"></div>
+        <span id="ws-label" style="font-size:14px;font-weight:700;color:#888">연결 안됨</span>
+      </div>
+      <div id="status-right" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="btn-start" onclick="startVote()" style="padding:8px 16px;font-size:15px">▶ 투표 시작</button>
+        <button class="btn btn-ghost" id="btn-reset" onclick="resetVote()" style="padding:8px 16px;font-size:15px">🗑 초기화</button>
+        <button class="btn btn-danger" id="btn-end" onclick="endVote()" style="display:none;padding:8px 16px;font-size:15px">⏹ 투표 중지</button>
+        <button class="btn" id="btn-test" onclick="toggleTestMode()" style="background:#333;color:#888;border:1px solid rgba(255,255,255,.1);padding:8px 16px;font-size:15px">🧪 테스트</button>
+      </div>
+    </div>
     <input id="vote-title-input" class="vote-title-input" placeholder="투표 제목을 입력하세요" autocomplete="off"/>
     <div id="options-wrap"></div>
     <div style="display:flex;gap:8px;margin-top:4px">
       <button class="btn btn-ghost" onclick="addOption()" style="flex:1">＋ 항목 추가</button>
-    </div>
-  </div>
-
-  <div class="status-bar" id="control-card">
-    <div class="status-left">
-      <div class="ws-dot" id="ws-dot"></div>
-      <span id="ws-label">연결 안됨</span>
-    </div>
-    <div class="status-right" id="status-right">
-      <button class="btn btn-primary" id="btn-start" onclick="startVote()">▶ 투표 시작</button>
-      <button class="btn btn-ghost" id="btn-reset" onclick="resetVote()">🗑 초기화</button>
-      <button class="btn btn-danger" id="btn-end" onclick="endVote()" style="display:none">⏹ 투표 중지</button>
-      <button class="btn" id="btn-test" onclick="toggleTestMode()" style="background:#333;color:#888;border:1px solid rgba(255,255,255,.1)">🧪 테스트</button>
     </div>
   </div>
 
@@ -377,7 +372,6 @@ function updateVoteControls(){
   document.getElementById('btn-start').style.display=voteRunning?'none':'';
   document.getElementById('btn-reset').style.display=voteRunning?'none':'';
   document.getElementById('btn-end').style.display=voteRunning?'':'none';
-  document.getElementById('status-right').classList.toggle('center',voteRunning);
 }
 function toggleVotePanels(){
   document.getElementById('anim-card').style.display=voteRunning?'':'none';
