@@ -223,16 +223,6 @@ body::before{
       </div>
     </div>
     <input id="vote-title-input" class="vote-title-input" placeholder="투표 제목을 입력하세요" autocomplete="off"/>
-    <!-- 투표 진행 중 애니메이션 -->
-    <div id="anim-inline" style="display:none;margin-bottom:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="font-size:13px;font-weight:700;color:#4a4a4a">🗳 투표 진행 중</div>
-        <div style="font-size:11px;color:#333">투표가 들어올 때마다 투표용지가 떨어져요</div>
-      </div>
-      <div class="ballot-stage" id="ballot-stage">
-        <div class="pile-wrap" id="pile-wrap"></div>
-      </div>
-    </div>
     <div id="options-wrap"></div>
     <!-- 결과: 투표 중지 후 options-wrap 자리에 표시 -->
     <div id="results-inline" style="display:none">
@@ -247,7 +237,16 @@ body::before{
     </div>
   </div>
 
-
+  <!-- 투표 진행 중 애니메이션 카드 -->
+  <div class="card" id="anim-card" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:14px;font-weight:700;color:#4a4a4a">🗳 투표 진행 중</div>
+      <div style="font-size:11px;color:#333">투표가 들어올 때마다 투표용지가 떨어져요</div>
+    </div>
+    <div class="ballot-stage" id="ballot-stage">
+      <div class="pile-wrap" id="pile-wrap"></div>
+    </div>
+  </div>
 
 </div>
 
@@ -377,9 +376,9 @@ function updateVoteControls(){
 }
 function toggleVotePanels(){
   const show=!voteRunning&&voteEnded;
-  document.getElementById('anim-inline').style.display=voteRunning?'':'none';
+  document.getElementById('anim-card').style.display=voteRunning?'':'none';
   document.getElementById('results-inline').style.display=show?'':'none';
-  document.getElementById('options-wrap').style.display=(voteRunning||show)?'none':'';
+  document.getElementById('options-wrap').style.display=show?'none':'';
 }
 function startVote(){
   applyOptions();
