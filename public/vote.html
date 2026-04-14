@@ -149,7 +149,7 @@ body::before{
   <div class="header">
     <div class="header-badge"><div class="live-dot"></div> 첫째와둘째</div>
     <h1>🗳 실시간 채팅 투표</h1>
-    <p>채팅창에 <strong>!투표1</strong> 또는 <strong>!투표 1</strong> 을 입력하세요</p>
+    <p>채팅창에 <strong>!투표숫자</strong> 또는 <strong>!투표 숫자</strong> 를 입력하세요</p>
   </div>
 
   <!-- 투표 설정 -->
@@ -223,6 +223,7 @@ let ws = null, wsConnected = false;
 let wsReconnectTimer = null, wsAutoReconnect = true;
 let channelIdCache = null;
 let voteRunning = false;
+let voteEnded = false;
 
 // ── 초기 항목 (2개) ──
 let optionRows = [{id:1,label:''},{id:2,label:''}];
@@ -283,9 +284,10 @@ function toggleVotePanels(){
   const resultsCard = document.getElementById('results-card');
   const feedCard = document.getElementById('feed-card');
   animCard.style.display = voteRunning ? '' : 'none';
-  statRow.style.display = voteRunning ? 'none' : '';
-  resultsCard.style.display = voteRunning ? 'none' : '';
-  feedCard.style.display = voteRunning ? 'none' : '';
+  const showResultPanels = !voteRunning && voteEnded;
+  statRow.style.display = showResultPanels ? '' : 'none';
+  resultsCard.style.display = showResultPanels ? '' : 'none';
+  feedCard.style.display = showResultPanels ? '' : 'none';
 }
 
 function launchBallots(count=1){
@@ -305,6 +307,7 @@ function launchBallots(count=1){
 function startVote(){
   applyOptions();
   voteRunning = true;
+  voteEnded = false;
   updateVoteControls();
   toggleVotePanels();
   const currentTotalVotes = Object.values(voteCounts).reduce((s,v)=>s+v,0);
@@ -317,6 +320,7 @@ function startVote(){
 
 function endVote(){
   voteRunning = false;
+  voteEnded = true;
   updateVoteControls();
   toggleVotePanels();
   wsDisconnect();
@@ -460,6 +464,7 @@ function renderResults(){
 function resetVote(){
   voteCounts = {};
   voterMap = {};
+  voteEnded = false;
   Object.keys(voteOptions).forEach(k=>{ voteCounts[k]=0; });
   document.getElementById('feed').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px 0">투표가 들어오면 여기에 표시돼요</div>';
   updateStats();
