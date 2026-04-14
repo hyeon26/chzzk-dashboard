@@ -288,29 +288,28 @@ const _app = initializeApp({
   appId:'1:794631097887:web:e03fe5f49915f4c741cf2a'
 });
 const _db = getFirestore(_app);
+let _voteDocId = null;
 
-// 컨텐츠 저장 함수
-async function saveVoteResult(title, winnersArr, startedAt){
+async function upsertVoteResult(title, winnersArr, startedAt){
   const today = new Date();
   const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
   const startTime = startedAt ? startedAt.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '';
   const endTime = today.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
   const duration = startedAt ? `${startTime} ~ ${endTime}` : endTime;
-  const note = winnersArr.length ? `당첨자
-${winnersArr.map((n,i)=>`${i+1}. ${n}`).join('
-')}` : '';
-  await addDoc(collection(_db,'contents'),{
-    title: title||'투표',
-    date: dateStr,
-    duration,
-    note,
-    files:[],
-    createdAt: serverTimestamp()
-  });
+  const note = winnersArr.length ? '당첨자\n'+winnersArr.map((n,i)=>`${i+1}. ${n}`).join('\n') : '';
+  const data = { title: title||'투표', date: dateStr, duration, note, files:[] };
+  if(_voteDocId){
+    await updateDoc(doc(_db,'contents',_voteDocId), data);
+  } else {
+    const ref = await addDoc(collection(_db,'contents'),{ ...data, createdAt: serverTimestamp() });
+    _voteDocId = ref.id;
+  }
 }
+window._resetVoteDoc = ()=>{ _voteDocId=null; };
+window._upsertVoteResult = upsertVoteResult;
+</script>
 
-window._saveVoteResult = saveVoteResult;
-
+<script>
 const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
 
 let voteOptions={}, voteCounts={}, voterMap={}, voteStartedAt=null, winnersLog=[];
