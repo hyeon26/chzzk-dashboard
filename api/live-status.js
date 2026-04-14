@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const CHANNEL_ID = '458f6ec20b034f49e0fc6d03921646d2';
+  const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
   
   const headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
