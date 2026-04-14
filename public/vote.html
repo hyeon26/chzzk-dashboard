@@ -34,7 +34,7 @@ body::before{
 
 /* 헤더 */
 .header{text-align:center;margin-bottom:40px;position:relative;padding-top:56px}
-.header-badge{position:absolute;top:0;left:0;display:inline-flex;align-items:center;gap:10px;padding:9px 16px;border-radius:20px;background:rgba(91,74,232,.15);border:1px solid rgba(91,74,232,.3);font-size:16px;font-weight:800;color:var(--accent2);letter-spacing:.4px}
+.header-badge{position:absolute;top:0;left:0;display:inline-flex;align-items:center;gap:10px;padding:9px 16px;border-radius:20px;background:rgba(91,74,232,.15);font-size:16px;font-weight:800;color:var(--accent2);letter-spacing:.4px}
 .brand-logo{width:26px;height:26px;border-radius:7px;object-fit:cover;display:block}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 .header h1{font-size:44px;font-weight:900;letter-spacing:-.7px;margin-bottom:10px}
@@ -96,11 +96,18 @@ body::before{
 .feed{height:160px;overflow-y:auto;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12px;font-family:monospace;line-height:1.8;color:var(--text2)}
 .feed::-webkit-scrollbar{width:4px}.feed::-webkit-scrollbar-thumb{background:var(--text3);border-radius:4px}
 
-.voter-list-wrap{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
-.voter-list-title{font-size:16px;color:var(--text2);margin-bottom:12px}
-.voter-list{display:flex;flex-wrap:wrap;gap:8px}
 .voter-chip{padding:8px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:15px;color:var(--text)}
 .vote-item{cursor:pointer}
+
+/* 팝업 */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:1000;padding:24px}
+.modal.show{display:flex}
+.modal-box{width:min(920px,95vw);max-height:80vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:24px}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.modal-title{font-size:24px;font-weight:900;color:var(--text)}
+.modal-close{background:transparent;color:var(--text2);border:1px solid var(--border);width:42px;height:42px;border-radius:50%;font-size:26px;cursor:pointer;line-height:1}
+.modal-voters{display:flex;flex-wrap:wrap;gap:10px}
+.modal-empty{color:var(--text3);font-size:18px}
 
 /* 투표 진행 애니메이션 */
 .ballot-stage{position:relative;height:220px;border-radius:12px;background:linear-gradient(180deg,rgba(124,110,240,.18),rgba(124,110,240,.04));overflow:hidden;border:1px solid var(--border)}
@@ -207,6 +214,17 @@ body::before{
 
 </div>
 
+<!-- 닉네임 팝업 -->
+<div class="modal" id="voter-modal" onclick="onModalBackdrop(event)">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">투표자 목록</div>
+      <button class="modal-close" onclick="closeVoterModal()" aria-label="닫기">×</button>
+    </div>
+    <div class="modal-voters" id="modal-voters"></div>
+  </div>
+</div>
+
 <!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
@@ -222,7 +240,7 @@ let wsReconnectTimer = null, wsAutoReconnect = true;
 let channelIdCache = null;
 let voteRunning = false;
 let voteEnded = false;
-let selectedOptionKey = '';
+let selectedOptionKey = null;
 
 // ── 초기 항목 (2개) ──
 let optionRows = [{id:1,label:''},{id:2,label:''}];
@@ -316,9 +334,6 @@ function startVote(){
   voteEnded = false;
   updateVoteControls();
   toggleVotePanels();
-  const currentTotalVotes = Object.values(voteCounts).reduce((s,v)=>s+v,0);
-  const burstCount = Math.max(currentTotalVotes, Object.keys(voteOptions).length, 1);
-  launchBallots(burstCount);
   document.getElementById('anim-card').scrollIntoView({behavior:'smooth', block:'center'});
   showToast('▶ 투표 진행 중');
 }
@@ -427,16 +442,14 @@ function renderResults(){
   // 정렬 (득표 많은 순)
   const sorted = keys.slice().sort((a,b)=>(voteCounts[b]||0)-(voteCounts[a]||0));
   const maxVotes = voteCounts[sorted[0]] || 0;
-  if(selectedOptionKey && !keys.includes(selectedOptionKey)) selectedOptionKey = '';
 
   const voteItemsHtml = keys.map((k,i) => {
     const cnt = voteCounts[k] || 0;
     const pct = Math.round(cnt/total*100);
     const isFirst = cnt > 0 && cnt === maxVotes;
-    const isSelected = selectedOptionKey === k;
     const colors = ['#5b4ae8','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
     return `
-      <div class="vote-item${isFirst?' first':''}" onclick="showOptionVoters('${k}')" style="${isSelected?'outline:2px solid rgba(124,110,240,.7);outline-offset:6px;border-radius:10px;padding:4px':''}">
+      <div class="vote-item${isFirst?' first':''}" onclick="showOptionVoters('${k}')">
         <div class="vote-item-header">
           <div class="vote-item-name">
             <div class="vote-badge" style="${!isFirst?`background:${colors[i%colors.length]||'var(--accent)'}`:''}">${k}</div>
@@ -451,43 +464,43 @@ function renderResults(){
     `;
   }).join('');
 
-  el.innerHTML = `${voteItemsHtml}<div class="voter-list-wrap"><div class="voter-list-title" id="voter-list-title"></div><div class="voter-list" id="voter-list"></div></div>`;
-  renderSelectedVoters();
+  el.innerHTML = voteItemsHtml;
 }
 
 function showOptionVoters(optionKey){
   selectedOptionKey = optionKey;
-  renderResults();
+  const modal = document.getElementById('voter-modal');
+  const title = document.getElementById('modal-title');
+  const list = document.getElementById('modal-voters');
+  const label = voteOptions[optionKey] || `${optionKey}번`;
+  const voters = Object.keys(voterMap).filter(nick => voterMap[nick] === optionKey);
+  title.textContent = `${optionKey}번 ${label}`;
+  if(!voters.length){
+    list.innerHTML = `<div class="modal-empty">투표 인원 없음</div>`;
+  } else {
+    list.innerHTML = voters.map(nick => `<span class="voter-chip">${nick}</span>`).join('');
+  }
+  modal.classList.add('show');
 }
 
-function renderSelectedVoters(){
-  const titleEl = document.getElementById('voter-list-title');
-  const listEl = document.getElementById('voter-list');
-  if(!titleEl || !listEl) return;
-  if(!selectedOptionKey){
-    titleEl.textContent = '';
-    listEl.innerHTML = '';
-    return;
-  }
-  const label = voteOptions[selectedOptionKey] || `${selectedOptionKey}번`;
-  const voters = Object.keys(voterMap).filter(nick => voterMap[nick] === selectedOptionKey);
-  titleEl.textContent = `${selectedOptionKey}번 ${label}`;
-  if(!voters.length){
-    listEl.innerHTML = `<span style="color:var(--text3)">투표 인원 없음</span>`;
-    return;
-  }
-  listEl.innerHTML = voters.map(nick => `<span class="voter-chip">${nick}</span>`).join('');
+function closeVoterModal(){
+  document.getElementById('voter-modal').classList.remove('show');
+}
+
+function onModalBackdrop(e){
+  if(e.target.id === 'voter-modal') closeVoterModal();
 }
 
 function resetVote(){
   voteCounts = {};
   voterMap = {};
   voteEnded = false;
-  selectedOptionKey = '';
+  selectedOptionKey = null;
   Object.keys(voteOptions).forEach(k=>{ voteCounts[k]=0; });
   updateStats();
   renderResults();
   toggleVotePanels();
+  closeVoterModal();
   wsAutoReconnect = true;
   if(!wsConnected) wsConnect();
   showToast('🗑 초기화 완료');
