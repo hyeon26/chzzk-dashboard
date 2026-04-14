@@ -622,7 +622,7 @@ function startRaffle(){
   // 느린 구간 딜레이 배열: 80ms → 700ms, 균등 간격
   const slowDelays=Array.from({length:SLOW_STEPS},(_,i)=>{
     const t=i/(SLOW_STEPS-1||1);
-    return Math.round(80+t*620); // 80ms → 700ms 선형
+    return Math.round(80+t*920); // 80ms → 1000ms 선형
   });
 
   let frame=0, lastLit=-1;
