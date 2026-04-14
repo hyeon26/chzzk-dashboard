@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>첫째와둘째 – 클립 모음</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link rel="icon" type="image/png" href="/logo.png"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f7ff;--surface:#fff;--surface2:#f0effe;
+  --text:#1a1033;--text2:#7b6fa0;--text3:#a99fcc;
+  --accent:#5B4AE8;--accent2:#7c6ef0;--accent-light:#ede9fe;
+  --red:#ef4444;--red-light:#fff1f1;--red-border:#fecaca;
+  --border:rgba(91,74,232,.1);--border2:rgba(91,74,232,.2);
+  --shadow:0 2px 12px rgba(91,74,232,.08);--shadow-md:0 4px 24px rgba(91,74,232,.13);
+  --radius:14px;--radius-sm:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0f0d1a;--surface:#1a1730;--surface2:#221f38;
+    --text:#ede9fe;--text2:#9d8fcc;--text3:#5c4f88;
+    --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+    --shadow:0 2px 12px rgba(0,0,0,.3);--shadow-md:0 4px 24px rgba(0,0,0,.4);
+    --accent-light:#1e1a38;--red-light:#2a1010;--red-border:#7f1d1d;
+  }
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* 헤더 */
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;box-shadow:var(--shadow)}
+.logo-area{display:flex;align-items:center;gap:12px}
+.logo-icon{width:44px;height:44px;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.logo-text{font-size:18px;font-weight:900;letter-spacing:-.3px}
+
+/* ON AIR 배지 */
+.live-badge{display:inline-flex;align-items:center;text-decoration:none;background:#0d0d0d;border-radius:8px;padding:6px 14px;border:1.5px solid #333;transition:all .4s;gap:0;position:relative}
+#live-text{font-size:13px;font-weight:900;letter-spacing:3px;font-family:'Arial Black',Arial,sans-serif;transition:all .4s}
+.live-badge.on{border-color:rgba(255,40,40,0.5);box-shadow:0 0 8px rgba(255,40,40,0.3),inset 0 0 12px rgba(255,0,0,0.08)}
+.live-badge.on #live-text{color:#ff3333;text-shadow:0 0 6px #ff0000,0 0 12px #ff0000,0 0 20px #ff0000,0 0 40px #ff0000}
+.live-badge.off{border-color:#2a2a2a;box-shadow:none}
+.live-badge.off #live-text{color:#3a3a3a;text-shadow:none}
+
+/* 라이브 배너 */
+.live-banner{display:none;align-items:center;gap:14px;padding:14px 20px;border-radius:var(--radius);background:linear-gradient(135deg,#fff1f1,#fff5f5);border:1px solid var(--red-border);margin-bottom:24px;box-shadow:0 2px 12px rgba(239,68,68,.1);cursor:pointer}
+.live-banner.show{display:flex}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.lb-dot{width:11px;height:11px;border-radius:50%;background:var(--red);animation:blink 1.4s infinite;flex-shrink:0}
+.lb-text{flex:1;font-size:13px;color:#7f1d1d;font-weight:600}
+.lb-link{font-size:12px;padding:7px 16px;border-radius:20px;background:var(--red);color:#fff;text-decoration:none;font-weight:700}
+
+/* 메인 */
+.main{padding:28px 32px;max-width:1600px;margin:0 auto}
+
+/* 클립 카드 */
+.clip-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;text-decoration:none;display:block}
+.clip-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.12);border-color:var(--accent)}
+.clip-thumb-wrap{position:relative;width:100%;aspect-ratio:16/9;background:var(--surface2);overflow:hidden}
+.clip-duration{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.75);color:#fff;font-size:11px;font-weight:700;padding:2px 6px;border-radius:4px}
+.clip-info{padding:10px 12px 12px}
+.clip-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.4}
+.clip-meta{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text3)}
+.clip-views{font-weight:600}
+.sort-btn{padding:5px 10px;border-radius:16px;border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.sort-btn:hover{border-color:var(--accent);color:var(--accent)}
+.active-sort{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
+.loading{text-align:center;padding:48px;color:var(--text2);font-size:14px}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text2);font-size:14px;border:2px dashed var(--border2);border-radius:var(--radius)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 클립 플레이어 모달 */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(10,8,30,.7);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.clip-player-box{background:#000;border-radius:var(--radius);overflow:hidden;width:min(900px,95vw);box-shadow:var(--shadow-md)}
+.clip-player-head{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);gap:12px}
+
+@media(max-width:768px){
+  .header{padding:10px 14px}
+  .main{padding:14px}
+  #clips-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}
+}
+@media(max-width:480px){
+  #clips-grid{grid-template-columns:1fr!important}
+}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="header">
+  <div class="logo-area">
+    <div class="logo-icon"><img src="/logo.png" width="44" height="44" alt="로고" onerror="this.style.display='none'"/></div>
+    <div>
+      <div class="logo-text">첫째와둘째</div>
+    </div>
+  </div>
+  <a id="live-badge" class="live-badge off" href="https://chzzk.naver.com/live/48070f8882233efa7aee52519fee8fca" target="_blank" rel="noopener">
+    <span id="live-text">ON AIR</span>
+  </a>
+</div>
+
+<!-- 메인 -->
+<div class="main">
+  <!-- 라이브 배너 -->
+  <div id="live-banner" class="live-banner" onclick="window.open('https://chzzk.naver.com/live/48070f8882233efa7aee52519fee8fca','_blank')">
+    <div class="lb-dot"></div>
+    <div class="lb-text" id="banner-text">🔴 지금 방송 중입니다!</div>
+    <a class="lb-link" href="https://chzzk.naver.com/live/48070f8882233efa7aee52519fee8fca" target="_blank" onclick="event.stopPropagation()">바로가기</a>
+  </div>
+
+  <!-- 타이틀 + 정렬/검색 -->
+  <div style="margin-bottom:16px">
+    <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:10px">🎞 클립 모음</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button onclick="setSortOrder('newest')" id="sort-newest" class="sort-btn active-sort">최신순</button>
+        <button onclick="setSortOrder('oldest')" id="sort-oldest" class="sort-btn">오래된순</button>
+        <button onclick="setSortOrder('popular')" id="sort-popular" class="sort-btn">인기순</button>
+      </div>
+      <div style="position:relative;flex:1;min-width:0">
+        <input id="clip-search" type="text" placeholder="클립 검색..." oninput="filterClips(this.value)"
+          style="width:100%;padding:8px 36px 8px 14px;border:1.5px solid var(--border2);border-radius:20px;background:var(--surface);color:var(--text);font-size:13px;outline:none;box-sizing:border-box"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"/>
+        <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none">🔍</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 클립 그리드 -->
+  <div id="clips-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+    <div class="loading">클립 불러오는 중...</div>
+  </div>
+</div>
+
+<!-- 클립 플레이어 모달 -->
+<div class="modal-bg" id="clip-player-modal" onclick="if(event.target===this)closePlayer()">
+  <div class="clip-player-box">
+    <div class="clip-player-head">
+      <div id="clip-player-title" style="font-size:15px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 80px)"></div>
+      <button onclick="closePlayer()" style="background:var(--surface2);border:none;cursor:pointer;padding:4px 10px;border-radius:12px;color:var(--text2);font-size:13px">✕ 닫기</button>
+    </div>
+    <div style="aspect-ratio:16/9">
+      <iframe id="clip-player-iframe" src="" allowfullscreen style="width:100%;height:100%;border:none"></iframe>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import { getFirestore, collection, getDocs, query } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+const app = initializeApp({
+  apiKey:'AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw',
+  authDomain:'firstandsecond-b449c.firebaseapp.com',
+  projectId:'firstandsecond-b449c',
+  storageBucket:'firstandsecond-b449c.firebasestorage.app',
+  messagingSenderId:'794631097887',
+  appId:'1:794631097887:web:e03fe5f49915f4c741cf2a'
+});
+const db = getFirestore(app);
+window._db = db;
+window._collection = collection;
+window._getDocs = getDocs;
+window._query = query;
+</script>
+
+<script>
+// ── 라이브 체크 ──
+async function checkLive(){
+  try{
+    const data = await fetch('/api/live-status').then(r=>r.json());
+    const isLive = data?.content?.status==='OPEN' || data?.content?.status==='STARTED';
+    const title = data?.content?.liveTitle||'';
+    const badge = document.getElementById('live-badge');
+    const banner = document.getElementById('live-banner');
+    badge.className = isLive ? 'live-badge on' : 'live-badge off';
+    if(isLive){
+      banner.classList.add('show');
+      document.getElementById('banner-text').textContent = title ? ` ${title}` : '🔴 지금 방송 중입니다!';
+    } else {
+      banner.classList.remove('show');
+    }
+  }catch(e){}
+}
+checkLive(); setInterval(checkLive, 3000);
+
+// ── 클립 ──
+let allClipsCache = [], clipsFilteredCache = [];
+let clipsLoading = false, currentSort = 'newest', clipsFilter = '';
+
+function formatDuration(sec){
+  if(sec==null) return '';
+  const m=Math.floor(sec/60), s=sec%60;
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+function formatClipDate(str){
+  const d=new Date(str.replace ? str.replace(' ','T') : str);
+  const days=['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+}
+function formatViews(n){ return n>=1000?(n/1000).toFixed(1)+'k':n+''; }
+
+function getSortedCache(arr){
+  const copy=[...arr];
+  if(currentSort==='newest') copy.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  else if(currentSort==='oldest') copy.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  else if(currentSort==='popular') copy.sort((a,b)=>(b.views||0)-(a.views||0));
+  return copy;
+}
+
+function setSortOrder(order){
+  currentSort=order;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active-sort'));
+  document.getElementById('sort-'+order).classList.add('active-sort');
+  applyFilterAndSort();
+}
+window.setSortOrder = setSortOrder;
+
+function filterClips(q){
+  clipsFilter=q.toLowerCase().trim();
+  applyFilterAndSort();
+}
+window.filterClips = filterClips;
+
+function applyFilterAndSort(){
+  const grid=document.getElementById('clips-grid');
+  grid.innerHTML='';
+  const filtered=clipsFilter?allClipsCache.filter(x=>x.title.toLowerCase().includes(clipsFilter)):allClipsCache;
+  clipsFilteredCache=getSortedCache(filtered);
+  renderClips();
+}
+
+async function loadClips(){
+  if(clipsLoading) return;
+  clipsLoading=true;
+  const grid=document.getElementById('clips-grid');
+  grid.innerHTML='<div class="loading" style="display:flex;align-items:center;gap:10px"><div style="width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div> 클립 불러오는 중...</div>';
+
+  try{
+    let items=[];
+
+    // Firebase 캐시 시도
+    if(window._db){
+      try{
+        const metaSnap=await window._getDocs(window._query(window._collection(window._db,'clipCache')));
+        let meta=null; const chunkDocs={};
+        metaSnap.forEach(d=>{ if(d.id==='meta') meta=d.data(); else chunkDocs[d.id]=d.data(); });
+        if(meta && meta.chunks>0){
+          for(let i=0;i<meta.chunks;i++){
+            const chunk=chunkDocs[`chunk_${i}`];
+            if(!chunk) continue;
+            if(Array.isArray(chunk.clips)) items.push(...chunk.clips);
+            else if(chunk.clips?.arrayValue?.values){
+              items.push(...chunk.clips.arrayValue.values.map(v=>{
+                const f=v.mapValue.fields;
+                return {
+                  type:f.type?.stringValue, id:f.id?.stringValue, title:f.title?.stringValue,
+                  thumb:f.thumb?.stringValue||null,
+                  duration:f.duration?.integerValue!=null?Number(f.duration.integerValue):null,
+                  views:Number(f.views?.integerValue||0), date:f.date?.stringValue,
+                  adult:f.adult?.booleanValue||false
+                };
+              }));
+            }
+          }
+        }
+      }catch(e){ console.log('캐시 실패:', e.message); }
+    }
+
+    // 캐시 없으면 API 직접 호출
+    if(!items.length){
+      const data=await fetch('/api/all-clips').then(r=>r.json());
+      items=data?.items||[];
+    }
+
+    // 로고 base64 (치지직/유튜브)
+    const CHZZK_B64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwZmY3ZiIvPjx0ZXh0IHg9IjEyIiB5PSIxNyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiMwMDAiPlo8L3RleHQ+PC9zdmc+";
+    const YT_B64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iI2ZmMDAwMCIvPjxwb2x5Z29uIHBvaW50cz0iMTAsMTYgMTYsMTIgMTAsOCIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==";
+
+    allClipsCache=items.map(item=>({...item, _chzzk_b64:CHZZK_B64, _yt_b64:YT_B64}));
+    clipsFilteredCache=getSortedCache(allClipsCache);
+    grid.innerHTML='';
+    if(!allClipsCache.length){ grid.innerHTML='<div class="empty-state">클립이 없어요</div>'; return; }
+    renderClips();
+  }catch(e){
+    console.error(e);
+    grid.innerHTML='<div class="empty-state">불러오기 실패: '+e.message+'</div>';
+  }finally{ clipsLoading=false; }
+}
+
+function renderClips(){
+  const grid=document.getElementById('clips-grid');
+  const src=clipsFilteredCache.length?clipsFilteredCache:allClipsCache;
+  if(!src.length){ grid.innerHTML='<div class="empty-state">검색 결과가 없어요</div>'; return; }
+  grid.innerHTML='';
+
+  const hotIds=new Set([...allClipsCache].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,10).map(x=>x.id));
+  const now=Date.now(), threeDays=3*24*60*60*1000;
+
+  src.forEach(item=>{
+    const card=document.createElement('div');
+    card.className='clip-card';
+    const dateStr=formatClipDate(item.date);
+    const isNew=(now-new Date(item.date).getTime())<=threeDays;
+    const isHot=hotIds.has(item.id);
+    const badges=
+      (isHot?`<span style="position:absolute;top:6px;right:6px;background:#ef4444;color:#fff;font-size:10px;font-weight:900;padding:2px 6px;border-radius:4px;letter-spacing:.5px;box-shadow:0 1px 4px rgba(0,0,0,.4)">🔥HOT</span>`:'') +
+      (isNew?`<span style="position:absolute;top:${isHot?'30px':'6px'};right:6px;background:#10b981;color:#fff;font-size:10px;font-weight:900;padding:2px 6px;border-radius:4px;letter-spacing:.5px;box-shadow:0 1px 4px rgba(0,0,0,.4)">✨NEW</span>`:'');
+
+    if(item.type==='chzzk'){
+      card.onclick=()=>item.adult?window.open(`https://chzzk.naver.com/clips/${item.id}`,'_blank'):openClipPlayer(item.id,item.title,'chzzk');
+      const thumb=item.thumb?`<img src="${item.thumb}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface2);font-size:28px">🎞</div>`;
+      card.innerHTML=`<div class="clip-thumb-wrap">${thumb}<div class="clip-duration">${formatDuration(item.duration)}</div><img src="${item._chzzk_b64}" style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:5px;box-shadow:0 1px 4px rgba(0,0,0,.4)">${badges}</div><div class="clip-info"><div class="clip-title">${item.title}</div><div class="clip-meta"><span class="clip-views">👁 ${formatViews(item.views)}</span><span>${dateStr}</span></div></div>`;
+    } else {
+      card.onclick=()=>openClipPlayer(item.id,item.title,'youtube');
+      card.innerHTML=`<div class="clip-thumb-wrap"><img src="${item.thumb}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy"><img src="${item._yt_b64}" style="position:absolute;top:6px;left:6px;width:30px;height:auto;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.4)">${badges}</div><div class="clip-info"><div class="clip-title">${item.title}</div><div class="clip-meta"><span class="clip-views">👁 ${formatViews(item.views)}</span><span>${dateStr}</span></div></div>`;
+    }
+    grid.appendChild(card);
+  });
+}
+
+function openClipPlayer(id, title, type){
+  document.getElementById('clip-player-title').textContent=title;
+  document.getElementById('clip-player-iframe').src=
+    type==='youtube'?`https://www.youtube.com/embed/${id}?autoplay=1`:`https://chzzk.naver.com/embed/clip/${id}`;
+  document.getElementById('clip-player-modal').classList.add('open');
+}
+window.openClipPlayer=openClipPlayer;
+
+function closePlayer(){
+  document.getElementById('clip-player-iframe').src='';
+  document.getElementById('clip-player-modal').classList.remove('open');
+}
+window.closePlayer=closePlayer;
+
+// Firebase 모듈 로드 후 클립 로드
+window.addEventListener('load', ()=>{
+  setTimeout(loadClips, 100);
+});
+</script>
+</body>
+</html>
