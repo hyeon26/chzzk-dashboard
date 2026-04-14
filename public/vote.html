@@ -735,12 +735,8 @@ function startRaffle(){
 let currentWinner=null;
 
 function showWinner(name){
-  winnersSet.add(name);
-  winnersLog.push(name);
+  winnersSet.add(name); // 뽑기 대상에서 제외
   currentWinner=name;
-  // Firebase 실시간 저장/업데이트
-  const voteTitle=document.getElementById('vote-title-input')?.value?.trim()||'투표';
-  if(window._upsertVoteResult) window._upsertVoteResult(voteTitle, [...winnersLog], voteStartedAt).catch(()=>{});
   const idx=raffleVoters.indexOf(name);
   if(idx>=0){
     const chip=document.getElementById(`chip-${idx}`);
@@ -748,18 +744,36 @@ function showWinner(name){
   }
   const key=currentRaffleKey;
   const label=voteOptions[key]||`${key}번`;
-  const num=winnersSet.size;
   document.getElementById('winner-name').textContent=name;
-  document.getElementById('winner-option').textContent=`${label} · ${num}번째 당첨자`;
-  // 채팅 피드 초기화
+  document.getElementById('winner-option').textContent=label;
   document.getElementById('winner-chat-feed').innerHTML='';
   document.getElementById('winner-overlay').classList.add('show');
 }
 
-
-
 function closeWinner(){
+  // 확인: winnersLog에 추가 후 Firebase 저장
+  if(currentWinner){
+    winnersLog.push(currentWinner);
+    const voteTitle=document.getElementById('vote-title-input')?.value?.trim()||'투표';
+    if(window._upsertVoteResult)
+      window._upsertVoteResult(voteTitle,[...winnersLog],voteStartedAt).catch(()=>{});
+  }
+  currentWinner=null;
   document.getElementById('winner-overlay').classList.remove('show');
+}
+
+function cancelWinner(){
+  // 취소: winnersSet 유지(다시 안 뽑힘), winnersLog엔 안 넣음(index.html 저장 안 함)
+  if(currentWinner){
+    const chipIdx=raffleVoters.indexOf(currentWinner);
+    if(chipIdx>=0){
+      const chip=document.getElementById(`chip-${chipIdx}`);
+      if(chip){ chip.classList.remove('won'); chip.classList.add('won-cancelled'); }
+    }
+  }
+  currentWinner=null;
+  document.getElementById('winner-overlay').classList.remove('show');
+  showToast('취소됨 · 다음 뽑기에서 제외돼요');
 }
 function closeVoterModal(){ document.getElementById('voter-modal').classList.remove('show'); }
 function onModalBackdrop(e){ if(e.target.id==='voter-modal') closeVoterModal(); }
