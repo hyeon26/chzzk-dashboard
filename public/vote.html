@@ -742,50 +742,49 @@ function launchConfetti(){
   if(!wrap) return;
   wrap.innerHTML='';
 
-  const W=wrap.offsetWidth||window.innerWidth;
-  const H=wrap.offsetHeight||window.innerHeight;
+  const W=window.innerWidth;
+  const H=window.innerHeight;
 
-  // 양쪽 하단 코너에서 발사
+  // 화면 좌하단, 우하단에서 강하게 발사
   const origins=[
-    {x:W*0.3, y:H},  // 왼쪽
-    {x:W*0.7, y:H},  // 오른쪽
+    {x:W*0.2, y:H, baseAngle:-Math.PI*0.72},  // 왼쪽 → 오른쪽 위로
+    {x:W*0.8, y:H, baseAngle:-Math.PI*0.28},  // 오른쪽 → 왼쪽 위로
   ];
 
-  origins.forEach((origin, oi)=>{
-    const N=55;
+  origins.forEach((origin)=>{
+    const N=80;
     for(let i=0;i<N;i++){
       const el=document.createElement('div');
       el.className='cf';
       const color=CF_COLORS[Math.floor(Math.random()*CF_COLORS.length)];
-      const w=6+Math.random()*10;
-      const h=10+Math.random()*14;
-      el.style.cssText=`width:${w}px;height:${h}px;background:${color};border-radius:${Math.random()>.5?'50%':'2px'};left:${origin.x}px;top:${origin.y}px;`;
+      const w=7+Math.random()*12;
+      const h=11+Math.random()*16;
+      el.style.cssText=`width:${w}px;height:${h}px;background:${color};border-radius:${Math.random()>.5?'50%':'2px'};position:absolute;left:0;top:0;`;
       wrap.appendChild(el);
 
-      // 발사 각도: 왼쪽은 왼쪽 위로, 오른쪽은 오른쪽 위로
-      const spread = Math.PI * 0.55; // 퍼지는 범위
-      const baseAngle = oi===0 ? -Math.PI*0.75 : -Math.PI*0.25;
-      const angle = baseAngle + (Math.random()-0.5)*spread;
-      const speed = 8+Math.random()*14;
-      let vx = Math.cos(angle)*speed;
-      let vy = Math.sin(angle)*speed;
+      const spread=Math.PI*0.6;
+      const angle=origin.baseAngle+(Math.random()-0.5)*spread;
+      const speed=18+Math.random()*22; // 더 빠르게
+      let vx=Math.cos(angle)*speed;
+      let vy=Math.sin(angle)*speed;
       let x=origin.x, y=origin.y;
       let rot=Math.random()*360;
-      const rotSpeed=(Math.random()-0.5)*12;
-      const gravity=0.45;
-      const delay=Math.random()*200; // ms
+      const rotSpeed=(Math.random()-0.5)*18;
+      const gravity=0.55;
+      const delay=Math.random()*300;
 
       setTimeout(()=>{
         let frame=0;
+        const maxFrames=140;
         function tick(){
           vy+=gravity;
           x+=vx; y+=vy;
-          vx*=0.99; // 공기저항
+          vx*=0.985;
           rot+=rotSpeed;
-          const opacity=Math.max(0,1-frame/90);
-          el.style.transform=`translate(${x-origin.x}px,${y-origin.y}px) rotate(${rot}deg)`;
+          const opacity=Math.max(0,1-frame/maxFrames);
+          el.style.transform=`translate(${x}px,${y}px) rotate(${rot}deg)`;
           el.style.opacity=opacity;
-          if(opacity>0 && y<H+50){
+          if(frame<maxFrames && y<H+80){
             frame++;
             requestAnimationFrame(tick);
           } else {
