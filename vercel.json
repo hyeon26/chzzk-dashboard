@@ -7,7 +7,7 @@
   ],
   "redirects": [
     {
-      "source": "/((?!vote$).*)",
+      "source": "/((?!vote$|logo\\.png$|api/).*)",
       "has": [{ "type": "host", "value": "cheotdool.vercel.app" }],
       "destination": "/__blocked__",
       "permanent": false
