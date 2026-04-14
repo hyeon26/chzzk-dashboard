@@ -224,6 +224,14 @@ body::before{
     </div>
     <input id="vote-title-input" class="vote-title-input" placeholder="투표 제목을 입력하세요" autocomplete="off"/>
     <div id="options-wrap"></div>
+    <!-- 결과: 투표 중지 후 options-wrap 자리에 표시 -->
+    <div id="results-inline" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:16px;font-weight:800;color:#4a4a4a">결과</div>
+        <div style="font-size:13px;font-weight:700;color:#555">총 <span id="total-votes" style="color:#888;font-size:16px;font-weight:900">0</span>표</div>
+      </div>
+      <div id="results"></div>
+    </div>
     <div style="display:flex;gap:8px;margin-top:4px">
       <button class="btn btn-ghost" id="btn-add-option" onclick="addOption()" style="flex:1">＋ 항목 추가</button>
     </div>
@@ -239,13 +247,7 @@ body::before{
     </div>
   </div>
 
-  <div class="card" id="results-card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div class="card-title" style="margin-bottom:0">결과</div>
-      <div style="font-size:13px;font-weight:700;color:#555">총 <span id="total-votes" style="color:#888;font-size:16px;font-weight:900">0</span>표</div>
-    </div>
-    <div id="results"></div>
-  </div>
+
 
 </div>
 
@@ -376,7 +378,8 @@ function updateVoteControls(){
 function toggleVotePanels(){
   document.getElementById('anim-card').style.display=voteRunning?'':'none';
   const show=!voteRunning&&voteEnded;
-  document.getElementById('results-card').style.display=show?'':'none';
+  document.getElementById('results-inline').style.display=show?'':'none';
+  document.getElementById('options-wrap').style.display=show?'none':'';
 }
 function startVote(){
   applyOptions();
