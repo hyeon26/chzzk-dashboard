@@ -1762,19 +1762,36 @@ function renderClipsPage(){
   const src = getClipsSrc();
   if(!src.length){ grid.innerHTML='<div class="empty-state">검색 결과가 없어요</div>'; return; }
   grid.innerHTML='';
+
+  // HOT: 전체 클립 중 조회수 상위 10개 id 추출
+  const hotIds = new Set(
+    [...allClipsCache].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,10).map(x=>x.id)
+  );
+  // NEW: 3일 이내
+  const now = Date.now();
+  const threeDays = 3 * 24 * 60 * 60 * 1000;
+
   src.forEach(item=>{
     const card = document.createElement('div');
     card.className='clip-card'; card.style.cursor='pointer';
     const dateStr = item.type==='chzzk'
       ? formatClipDate(item.date)
       : formatClipDate(new Date(item.date).toISOString().replace('T',' ').slice(0,19));
+
+    const itemDate = new Date(item.date).getTime();
+    const isNew = (now - itemDate) <= threeDays;
+    const isHot = hotIds.has(item.id);
+    const badges =
+      (isHot ? `<span style="position:absolute;top:6px;right:6px;background:#ef4444;color:#fff;font-size:10px;font-weight:900;padding:2px 6px;border-radius:4px;letter-spacing:.5px;box-shadow:0 1px 4px rgba(0,0,0,.4)">🔥HOT</span>` : '') +
+      (isNew ? `<span style="position:absolute;top:${isHot?'30px':'6px'};right:6px;background:#10b981;color:#fff;font-size:10px;font-weight:900;padding:2px 6px;border-radius:4px;letter-spacing:.5px;box-shadow:0 1px 4px rgba(0,0,0,.4)">✨NEW</span>` : '');
+
     if(item.type==='chzzk'){
       card.onclick=()=>item.adult?window.open(`https://chzzk.naver.com/clips/${item.id}`,'_blank'):openClipPlayer(item.id,item.title,'chzzk');
       const thumb=item.thumb?`<img src="${item.thumb}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface2);font-size:28px">🎞</div>`;
-      card.innerHTML=`<div class="clip-thumb-wrap">${thumb}<div class="clip-duration">${formatDuration(item.duration)}</div><img src="data:image/png;base64,${item._chzzk_b64}" style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:5px;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div><div class="clip-info"><div class="clip-title">${item.title}</div><div class="clip-meta"><span class="clip-views">👁 ${formatViews(item.views)}</span><span>${dateStr}</span></div></div>`;
+      card.innerHTML=`<div class="clip-thumb-wrap">${thumb}<div class="clip-duration">${formatDuration(item.duration)}</div><img src="data:image/png;base64,${item._chzzk_b64}" style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:5px;box-shadow:0 1px 4px rgba(0,0,0,.4)">${badges}</div><div class="clip-info"><div class="clip-title">${item.title}</div><div class="clip-meta"><span class="clip-views">👁 ${formatViews(item.views)}</span><span>${dateStr}</span></div></div>`;
     } else {
       card.onclick=()=>openClipPlayer(item.id,item.title,'youtube');
-      card.innerHTML=`<div class="clip-thumb-wrap"><img src="${item.thumb}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy"><img src="data:image/png;base64,${item._yt_b64}" style="position:absolute;top:6px;left:6px;width:30px;height:auto;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div><div class="clip-info"><div class="clip-title">${item.title}</div><div class="clip-meta"><span class="clip-views">👁 ${formatViews(item.views)}</span><span>${dateStr}</span></div></div>`;
+      card.innerHTML=`<div class="clip-thumb-wrap"><img src="${item.thumb}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy"><img src="data:image/png;base64,${item._yt_b64}" style="position:absolute;top:6px;left:6px;width:30px;height:auto;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.4)">${badges}</div><div class="clip-info"><div class="clip-title">${item.title}</div><div class="clip-meta"><span class="clip-views">👁 ${formatViews(item.views)}</span><span>${dateStr}</span></div></div>`;
     }
     grid.appendChild(card);
   });
