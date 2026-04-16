@@ -925,6 +925,7 @@ window.saveSchedule=async()=>{
 window.openScheduleView=(id)=>{
   const s=schedules.find(x=>x.id===id); if(!s) return;
   currentScheduleId=id;
+  history.replaceState(null,'','/schedule?open='+id);
   document.getElementById('sv-title').textContent=s.name;
   document.getElementById('sv-meta').textContent=`${formatDate(s.date)}${s.time?' · '+s.time:''}  |  ${TYPE_LABEL[s.type]||'일정'}`;
   const n=document.getElementById('sv-note');
@@ -1114,6 +1115,7 @@ window.saveContent=async()=>{
 window.openContentDetail=(id)=>{
   const c=contents.find(x=>x.id===id); if(!c) return;
   currentContentId=id;
+  history.replaceState(null,'','/content?open='+id);
   // 보기 모달
   document.getElementById('cv-title-heading').textContent='🎬 '+c.title;
   document.getElementById('cv-date').textContent=c.date ? '📅 '+c.date : '';
@@ -1890,7 +1892,14 @@ window.switchTab=(name,el)=>{
   if(name==='tools') loadTools();
 };
 window.openModal=(id)=>document.getElementById(id).classList.add('open');
-window.closeModal=(id)=>{ if(id==='clip-player-modal') document.getElementById('clip-player-iframe').src=''; document.getElementById(id).classList.remove('open'); };
+window.closeModal=(id)=>{
+  if(id==='clip-player-modal') document.getElementById('clip-player-iframe').src='';
+  document.getElementById(id).classList.remove('open');
+  if(id==='schedule-view-modal'||id==='schedule-detail-modal'||id==='content-view-modal'||id==='content-detail-modal'){
+    const base = location.pathname;
+    history.replaceState(null,'', base);
+  }
+};
 document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
 window.fmtTime=(el)=>{ let v=el.value.replace(/[^0-9]/g,''); if(v.length>2) v=v.slice(0,2)+':'+v.slice(2,4); el.value=v; };
 
