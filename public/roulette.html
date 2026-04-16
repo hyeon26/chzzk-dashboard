@@ -552,8 +552,10 @@ function onWsMsg(e){
         const extras = d.extras ? (typeof d.extras==='string' ? JSON.parse(d.extras) : d.extras) : {};
         const amt = Number(extras?.payAmount || 0);
         const isMission = extras?.donationType === 'MISSION' || !!extras?.missionDonationId;
+        console.log('도네 수신:', { msg: d.msg, message: d.message, amt, isMission, extras });
         if(isMission || !amt) return;
         const content = (d.msg || d.message || extras?.donationText || extras?.message || '').trim();
+        console.log('도네 내용:', content, '/ 등록 항목:', rouletteItems);
         if(!content) return;
         addDonation(content, amt);
       });
