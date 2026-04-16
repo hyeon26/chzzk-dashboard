@@ -87,6 +87,15 @@ select:focus{border-color:var(--accent2)}
 
 /* 스핀 중 오버레이 */
 .spinning .btn-gold{pointer-events:none;opacity:.6}
+
+/* 팝업 모달 */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--radius);padding:24px;width:min(400px,90vw)}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:16px}
+.modal input{width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;margin-bottom:16px}
+.modal input:focus{border-color:var(--accent2)}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
 </style>
 </head>
 <body>
