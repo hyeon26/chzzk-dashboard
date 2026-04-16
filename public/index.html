@@ -104,6 +104,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .ev-vod{background:#d1fae5;color:#064e3b}
 .ev-edit{background:#d1fae5;color:#064e3b}
 .ev-plan{background:#fef3c7;color:#78350f}
+.ev-info{background:#e0f2fe;color:#0369a1}
 
 .upcoming-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:20px;box-shadow:var(--shadow)}
 .up-title{font-size:14px;font-weight:700;margin-bottom:14px}
@@ -586,6 +587,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <select id="s-type">
       <option value="content">🎬 컨텐츠</option>
       <option value="schedule">📋 일정</option>
+      <option value="info">ℹ️ 정보</option>
     </select>
     <label>세부내용 (선택)</label>
     <textarea id="s-note" placeholder="세부 내용을 입력하세요"></textarea>
@@ -607,6 +609,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <select id="sd-type">
       <option value="content">🎬 컨텐츠</option>
       <option value="schedule">📋 일정</option>
+      <option value="info">ℹ️ 정보</option>
     </select>
     <label>세부내용 (선택)</label>
     <textarea id="sd-note" placeholder="세부 내용을 입력하세요"></textarea>
@@ -815,9 +818,9 @@ const app = initializeApp({
 const db = getFirestore(app);
 
 const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
-const TYPE_COLOR = {content:'#5B4AE8',schedule:'#f59e0b',vod:'#10b981'};
-const TYPE_CLASS = {content:'ev-stream',schedule:'ev-plan',vod:'ev-vod'};
-const TYPE_LABEL = {content:'컨텐츠',schedule:'일정',vod:'방송',clip:'클립'};
+const TYPE_COLOR = {content:'#5B4AE8',schedule:'#f59e0b',vod:'#10b981',info:'#38bdf8'};
+const TYPE_CLASS = {content:'ev-stream',schedule:'ev-plan',vod:'ev-vod',info:'ev-info'};
+const TYPE_LABEL = {content:'컨텐츠',schedule:'일정',vod:'방송',clip:'클립',info:'정보'};
 const THUMB_BG   = ['#ede9fe','#d1fae5','#fef3c7','#fce7f3','#dbeafe','#fef9c3'];
 const MONTHS_KR  = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const DAYS_KR    = ['일','월','화','수','목','금','토'];
