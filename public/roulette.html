@@ -104,7 +104,7 @@ select:focus{border-color:var(--accent2)}
       <div class="ws-dot" id="ws-dot"></div>
       <span id="ws-label" style="font-size:14px;font-weight:700;color:var(--text2)">연결 안됨</span>
     </div>
-    <button class="btn btn-ghost" onclick="clearHistory()">히스토리 초기화</button>
+    <button class="btn btn-ghost" onclick="resetRoulette()">룰렛 초기화</button>
   </div>
 
   <div class="main">
@@ -234,7 +234,7 @@ function renderEntries(){
       <div class="entry-name">${e.name}</div>
       <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
         <div class="entry-count">${e.count}장 (${pct}%)</div>
-        <div class="entry-amt">${e.amt.toLocaleString()}원</div>
+        ${e.amt > 0 ? `<div class="entry-amt">${e.amt.toLocaleString()}원</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -478,6 +478,18 @@ window.clearHistory = () => {
   history=[]; localStorage.removeItem('roulette-history'); renderHistory();
 };
 
+window.resetRoulette = () => {
+  if(!confirm('룰렛을 초기화할까요? (도네 카운트 + 히스토리)')) return;
+  entries = rouletteItems.map(name => ({ name, amt:0, count:0 }));
+  pool = [];
+  history = []; localStorage.removeItem('roulette-history');
+  lastWinner = null;
+  document.getElementById('result-banner').classList.remove('show');
+  document.getElementById('remove-btn').style.display='none';
+  document.getElementById('spin-btn').disabled = true;
+  rebuildPool(); renderEntries(); drawWheel(); renderHistory();
+};
+
 function renderHistory(){
   const wrap = document.getElementById('history-wrap');
   const list = document.getElementById('history-list');
@@ -541,7 +553,7 @@ function onWsMsg(e){
         const amt = Number(extras?.payAmount || 0);
         const isMission = extras?.donationType === 'MISSION' || !!extras?.missionDonationId;
         if(isMission || !amt) return;
-        const content = (d.msg || '').trim();
+        const content = (d.msg || d.message || extras?.donationText || extras?.message || '').trim();
         if(!content) return;
         addDonation(content, amt);
       });
