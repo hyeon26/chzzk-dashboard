@@ -1867,6 +1867,8 @@ window.kakaoShareStream = () => {
     link: { mobileWebUrl: url, webUrl: url }
   });
 };
+
+window.kakaoShareSchedule = () => {
   const s = schedules.find(x => x.id === currentScheduleId); if(!s) return;
   const title = s.name;
   const desc = [formatDate(s.date), s.time, TYPE_LABEL[s.type]||'일정', s.note].filter(Boolean).join(' · ');
