@@ -374,7 +374,7 @@ function drawWheel(highlightIdx = -1){
 }
 
 // ── 스핀 ──
-let currentAngle = 0;
+let currentAngle = 0; // 룰렛 회전 각도 (캔버스 회전량)
 
 window.spin = () => {
   if(isSpinning || pool.length === 0) return;
@@ -386,24 +386,29 @@ window.spin = () => {
   // 당첨자 미리 결정
   const winnerName = pool[Math.floor(Math.random()*pool.length)];
 
-  // 당첨자 각도 계산
   const uniqueNames = getUniqueNames();
   const weights = {};
   pool.forEach(n=>{ weights[n]=(weights[n]||0)+1; });
   const total = pool.length;
 
-  let winnerStart = -Math.PI/2;
+  // 포인터는 오른쪽(3시 방향 = 0도)
+  // 룰렛은 -π/2(12시)부터 시작해서 시계방향으로 그려짐
+  // 포인터(0도)에 당첨 항목 중앙이 오려면:
+  // sector 중앙각(절대) + currentAngle = 0 (mod 2π) → currentAngle = -sector중앙각
+  
+  let sectorStart = -Math.PI/2;
   for(let i=0; i<uniqueNames.length; i++){
     const slice = (weights[uniqueNames[i]]/total)*Math.PI*2;
-    if(uniqueNames[i]===winnerName){
-      // 포인터(오른쪽, 0도)가 중앙에 오도록
-      const targetAngle = -(winnerStart + slice/2) + Math.PI; // 오른쪽 포인터 기준
-      const spins = 5 + Math.floor(Math.random()*3); // 5~7바퀴
-      const finalAngle = currentAngle + spins*Math.PI*2 + targetAngle - currentAngle % (Math.PI*2);
+    if(uniqueNames[i] === winnerName){
+      const sectorMid = sectorStart + slice/2;
+      // 당첨 섹터 중앙이 오른쪽(0도)에 오도록 회전량 계산
+      const targetOffset = -sectorMid; // 이 만큼 회전하면 중앙이 0도에 옴
+      const spins = 5 + Math.floor(Math.random()*3);
+      const finalAngle = currentAngle + spins*Math.PI*2 + (targetOffset - currentAngle % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
       animateSpin(finalAngle, winnerName);
       break;
     }
-    winnerStart += slice;
+    sectorStart += slice;
   }
 };
 
@@ -616,18 +621,16 @@ function onWsMsg(e){
 setInterval(()=>{ if(ws && ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({ver:'2',cmd:10000})); }, 20000);
 
 function addDonation(content, amt){
-  // 등록된 항목 이름이 도네 내용에 포함되면 카운트
-  const matched = rouletteItems.filter(item => content.includes(item));
-  if(!matched.length) return;
-  matched.forEach(item => {
-    const existing = entries.find(e => e.name === item);
-    if(existing){
-      existing.amt += amt;
-      existing.count = Math.floor(existing.amt / 1000);
-    } else {
-      entries.push({ name: item, amt, count: Math.floor(amt/1000) });
-    }
-  });
+  // 등록된 항목 순서대로 첫 번째 매칭 항목만 카운트
+  const matched = rouletteItems.find(item => content.includes(item));
+  if(!matched) return;
+  const existing = entries.find(e => e.name === matched);
+  if(existing){
+    existing.amt += amt;
+    existing.count = Math.floor(existing.amt / 1000);
+  } else {
+    entries.push({ name: matched, amt, count: Math.floor(amt/1000) });
+  }
   entries = entries.sort((a,b)=>b.amt-a.amt);
   rebuildPool();
   renderEntries();
