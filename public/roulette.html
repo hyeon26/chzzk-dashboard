@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>도네 룰렛 - 첫째와둘째</title>
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -26,7 +26,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .header-left{display:flex;align-items:center;gap:12px}
 .back{font-size:13px;color:var(--text2);text-decoration:none;font-weight:600;padding:6px 14px;border:1.5px solid var(--border2);border-radius:20px;transition:all .2s}
 .back:hover{color:var(--text);border-color:var(--accent2)}
-.title{font-family:'Black Han Sans',sans-serif;font-size:24px;color:var(--text);letter-spacing:1px}
+.title{font-family:'Noto Sans KR',sans-serif;font-size:22px;font-weight:800;color:var(--text);letter-spacing:0px}
 .title span{color:var(--gold)}
 
 /* 세션 선택 */
@@ -59,7 +59,7 @@ select:focus{border-color:var(--accent2)}
 .result-banner.show{display:block;animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
 @keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
 .result-label{font-size:12px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.result-name{font-family:'Black Han Sans',sans-serif;font-size:32px;color:var(--gold);text-shadow:0 0 20px rgba(251,191,36,.5)}
+.result-name{font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:32px;color:var(--gold);text-shadow:0 0 20px rgba(251,191,36,.5)}
 
 /* 참여자 목록 */
 .panel{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;height:fit-content}
