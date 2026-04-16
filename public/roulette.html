@@ -141,7 +141,7 @@ select:focus{border-color:var(--accent2)}
         <div class="panel-title" style="justify-content:space-between">
           <span>📋 룰렛 항목</span>
           <div style="display:flex;gap:6px">
-            <button class="btn btn-ghost" onclick="toggleEntries()" style="padding:4px 12px;font-size:12px">현황</button>
+            <button class="btn btn-ghost" onclick="openEntriesModal()" style="padding:4px 12px;font-size:12px">현황</button>
             <button class="btn btn-primary" onclick="openItemModal()" style="padding:4px 12px;font-size:12px">+ 추가</button>
           </div>
         </div>
@@ -150,19 +150,24 @@ select:focus{border-color:var(--accent2)}
         </div>
       </div>
 
-      <!-- 룰렛 현황 (토글) -->
-      <div class="panel" id="entries-panel" style="display:none">
-        <div class="panel-title">🎫 현황 <span id="entry-total" style="color:var(--text2);font-size:12px;font-weight:400"></span></div>
-        <div class="panel-sub">도네 내용 기준 · 1,000원 = 1회</div>
-        <div class="entry-list" id="entry-list">
-          <div class="empty">도네 대기 중...</div>
-        </div>
-        <div class="history" id="history-wrap" style="display:none">
-          <div class="history-title">🏆 당첨 히스토리</div>
-          <div id="history-list"></div>
-        </div>
-      </div>
+    </div>
+  </div>
+</div>
 
+<!-- 현황 모달 -->
+<div class="modal-bg" id="entries-modal" onclick="if(event.target===this)closeEntriesModal()">
+  <div class="modal" style="width:min(480px,90vw)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 style="margin:0">🎫 현황 <span id="entry-total" style="color:var(--text2);font-size:13px;font-weight:400"></span></h3>
+      <button onclick="closeEntriesModal()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div class="panel-sub" style="margin-bottom:12px">도네 내용 기준 · 1,000원 = 1회</div>
+    <div class="entry-list" id="entry-list" style="max-height:360px;overflow-y:auto">
+      <div class="empty">도네 대기 중...</div>
+    </div>
+    <div class="history" id="history-wrap" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <div class="history-title">🏆 당첨 히스토리</div>
+      <div id="history-list"></div>
     </div>
   </div>
 </div>
@@ -205,9 +210,11 @@ let rouletteItems = JSON.parse(localStorage.getItem('roulette-items') || '[]'); 
 
 function saveItems(){ localStorage.setItem('roulette-items', JSON.stringify(rouletteItems)); }
 
-window.toggleEntries = () => {
-  const panel = document.getElementById('entries-panel');
-  panel.style.display = panel.style.display === 'none' ? '' : 'none';
+window.openEntriesModal = () => {
+  document.getElementById('entries-modal').classList.add('open');
+};
+window.closeEntriesModal = () => {
+  document.getElementById('entries-modal').classList.remove('open');
 };
 
 function renderItemList(){
