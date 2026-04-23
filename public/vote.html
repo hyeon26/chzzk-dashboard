@@ -68,11 +68,11 @@ body::before{
 /* 통계 */
 
 /* 투표 결과 */
-.vote-item{margin-bottom:18px;cursor:pointer}
-.vote-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.vote-item{margin-bottom:18px;cursor:pointer;min-height:72px}
+.vote-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;min-height:32px}
 .vote-item-name{font-size:22px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:10px}
 .vote-badge{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.vote-count{font-size:19px;font-weight:800;color:#888}
+.vote-count{font-size:19px;font-weight:800;color:#888;min-width:120px;text-align:right;flex-shrink:0}
 .vote-bar-wrap{height:14px;background:#2a2a2a;border-radius:20px;overflow:hidden}
 .vote-bar{height:100%;border-radius:20px;transition:width .5s cubic-bezier(.4,0,.2,1);min-width:0}
 .vote-item.first .vote-item-name{color:#fbbf24}
@@ -81,14 +81,14 @@ body::before{
 .vote-item:not(.first) .vote-bar{background:linear-gradient(90deg,var(--accent),var(--accent2))}
 
 /* 팝업 */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:1000;padding:24px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
 .modal.show{display:flex}
-.modal-box{width:min(920px,95vw);max-height:80vh;overflow:auto;background:#1e1e1e;border:1px solid rgba(255,255,255,.09);border-radius:16px;box-shadow:var(--shadow);padding:24px}
+.modal-box{width:min(1100px,98vw);max-height:90vh;overflow:auto;background:#1e1e1e;border:1px solid rgba(255,255,255,.09);border-radius:16px;box-shadow:var(--shadow);padding:24px}
 .modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
-.modal-title{font-size:24px;font-weight:900;color:var(--text)}
-.modal-close{background:transparent;color:#888;border:1px solid rgba(255,255,255,.1);width:42px;height:42px;border-radius:50%;font-size:26px;cursor:pointer;line-height:1}
-.modal-voters{display:flex;flex-wrap:wrap;gap:10px}
-.modal-empty{color:#4a4a4a;font-size:18px}
+.modal-title{font-size:20px;font-weight:900;color:var(--text)}
+.modal-close{background:transparent;color:#888;border:1px solid rgba(255,255,255,.1);width:38px;height:38px;border-radius:50%;font-size:22px;cursor:pointer;line-height:1}
+.modal-voters{display:flex;flex-wrap:wrap;gap:8px}
+.modal-empty{color:#4a4a4a;font-size:16px}
 
 /* ── 투표 애니메이션 스테이지 ── */
 .ballot-stage{
@@ -156,7 +156,7 @@ body::before{
 .toast.show{transform:translateX(-50%) translateY(0)}
 
 /* 당첨자 뽑기 */
-.voter-chip{position:relative;padding:8px 14px;border-radius:999px;background:#2a2a2a;border:1.5px solid rgba(255,255,255,.1);font-size:15px;color:#ccc;cursor:default;transition:background .15s,border-color .15s,color .15s;display:inline-flex;align-items:center;font-weight:700;min-width:0;white-space:nowrap}
+.voter-chip{position:relative;padding:6px 12px;border-radius:999px;background:#2a2a2a;border:1.5px solid rgba(255,255,255,.1);font-size:13px;font-weight:800;color:#ccc;cursor:default;transition:background .15s,border-color .15s,color .15s;display:inline-block;line-height:1.4}
 .voter-chip.lit{background:#2ecc71;border-color:#2ecc71;color:#000;box-shadow:0 0 16px rgba(46,204,113,.7)}
 .voter-chip.won{background:#1a6e3e;border-color:#2ecc71;color:#2ecc71;opacity:.7;text-decoration:line-through}
 .voter-chip.won-cancelled{background:#2a2a2a;border-color:#555;color:#555;opacity:.5;text-decoration:line-through}
@@ -362,13 +362,14 @@ function updateVoteControls(){
   document.getElementById('btn-start').style.display=voteRunning?'none':'';
   document.getElementById('btn-reset').style.display=voteRunning?'none':'';
   document.getElementById('btn-end').style.display=voteRunning?'':'none';
-  // 항목 추가, 항목 입력, 제목 입력 - 투표 중/결과에선 숨김
   const setupVisible=!voteRunning&&!voteEnded;
   document.getElementById('btn-add-option').style.display=setupVisible?'':'none';
   document.getElementById('vote-title-input').readOnly=!setupVisible;
   document.querySelectorAll('.option-input').forEach(el=>{ el.readOnly=!setupVisible; });
   document.querySelectorAll('.btn-remove-opt').forEach(el=>{ el.style.display=setupVisible?'':'none'; });
 }
+
+
 function toggleVotePanels(){
   const show=!voteRunning&&voteEnded;
   document.getElementById('anim-card').style.display=voteRunning?'':'none';
@@ -671,17 +672,20 @@ function startRaffle(){
   const chips=raffleVoters.map((_,i)=>document.getElementById(`chip-${i}`));
   const total=eligible.length; // 대상자만 카운트
 
-  // 느린 구간 시작점 완전 랜덤 → 당첨자 결정
-  const SLOW_STEPS=8;
-  const slowDelays=[80,194,309,423,537,651,766,1000];
-  const slowStartPos=Math.floor(Math.random()*total);
-  const winnerEligibleIdx=(slowStartPos+SLOW_STEPS-1)%total;
-  const winner=eligible[winnerEligibleIdx];
+  // 당첨자 먼저 완전 랜덤으로 결정
+  const winner = eligible[Math.floor(Math.random()*eligible.length)];
 
-  // 빠른 구간: eligible 순서로 돌기, 3~7바퀴
-  const laps=3+Math.floor(Math.random()*5);
-  const fastFrames=total*laps+slowStartPos;
-  const fastDelay=20+Math.floor(Math.random()*31);
+  // 느린 구간: 당첨자 위치에서 역산
+  const SLOW_STEPS = 8;
+  const winnerEligibleIdx = eligible.indexOf(winner);
+  const slowStartPos = (winnerEligibleIdx - SLOW_STEPS + 1 + total*100) % total;
+  const slowDelays = [80,150,230,330,450,600,780,1000].map(d => d + Math.floor(Math.random()*40-20));
+
+  // 빠른 구간: 완전 랜덤 시작 위치
+  const laps = total <= 10 ? 3+Math.floor(Math.random()*3) : total <= 30 ? 2+Math.floor(Math.random()*2) : 1+Math.floor(Math.random()*2);
+  const startOffset = Math.floor(Math.random()*total);
+  const fastFrames = total*laps + ((slowStartPos - startOffset + total*100) % total);
+  const fastDelay = total <= 10 ? 60+Math.floor(Math.random()*40) : total <= 30 ? 20+Math.floor(Math.random()*20) : 15+Math.floor(Math.random()*10);
 
   let frame=0, lastLit=-1;
 
@@ -705,14 +709,14 @@ function startRaffle(){
       return;
     }
 
-    const pos=frame<fastFrames
-      ? frame%total
-      : (slowStartPos+(frame-fastFrames))%total;
+    const pos = frame < fastFrames
+      ? (startOffset + frame) % total
+      : (slowStartPos + (frame-fastFrames)) % total;
 
     litChip(pos, true);
     lastLit=pos;
 
-    const delay=frame<fastFrames ? fastDelay : slowDelays[frame-fastFrames];
+    const delay = frame < fastFrames ? fastDelay : slowDelays[frame-fastFrames];
     frame++;
     setTimeout(step, delay);
   }
