@@ -17,5 +17,6 @@
     { "source": "/vote", "destination": "/vote.html" },
     { "source": "/logs", "destination": "/logs.html" },
     { "source": "/roulette", "destination": "/roulette.html" }
+    { "source": "/donation", "destination": "/donation.html" },
   ]
 }
