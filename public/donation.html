@@ -193,10 +193,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <div id="item-edit-list" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;margin-bottom:12px">
         <div style="color:var(--text3);text-align:center;padding:20px;font-size:12px">후원이 들어오면 자동으로 추가됩니다</div>
       </div>
-      <div style="margin-bottom:8px">
-        <button onclick="toggleRawList()" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline">원본 텍스트 보기/숨기기</button>
-      </div>
-      <textarea class="roulette-textarea" id="roulette-list" readonly style="display:none"></textarea>
+      <textarea class="roulette-textarea" id="roulette-list" readonly></textarea>
       <div class="roulette-actions">
         <button class="btn btn-copy" onclick="copyList()">📋 복사</button>
         <button class="btn btn-open" onclick="openRoulette()">🎰 룰렛 열기</button>
@@ -204,23 +201,25 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       </div>
     </div>
 
-    <!-- 후원 내역 (기본 접힘) -->
-    <div class="card">
-      <div class="collapsible-trigger" onclick="toggleFeed()">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="card-title" style="margin:0">💰 후원 내역</div>
-          <span style="font-size:11px;color:var(--text3)" id="feed-count">0건</span>
-        </div>
-        <span id="feed-arrow" style="font-size:11px;color:var(--text3)">▼ 펼치기</span>
+  </div>
+</div>
+
+<!-- 후원 내역 (하단 고정) -->
+<div style="max-width:1400px;margin:0 auto;padding:0 28px 40px">
+  <div class="card">
+    <div class="collapsible-trigger" onclick="toggleFeed()">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">💰 후원 내역</div>
+        <span style="font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-light);padding:2px 10px;border-radius:20px" id="feed-count">0건</span>
       </div>
-      <div class="collapsible-body" id="feed-body">
-        <div style="height:14px"></div>
-        <div class="feed-wrap" id="feed-wrap">
-          <div class="feed-empty">후원을 기다리는 중...</div>
-        </div>
+      <span id="feed-arrow" style="font-size:12px;font-weight:600;color:var(--text2)">▼ 펼치기</span>
+    </div>
+    <div class="collapsible-body" id="feed-body">
+      <div style="height:14px"></div>
+      <div class="feed-wrap" id="feed-wrap">
+        <div class="feed-empty">후원을 기다리는 중...</div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -465,10 +464,7 @@ function deleteItem(name, cnt) {
   updateRouletteList();
 }
 
-function toggleRawList() {
-  var ta = document.getElementById('roulette-list');
-  ta.style.display = ta.style.display === 'none' ? '' : 'none';
-}
+
 
 function copyList() {
   var val = document.getElementById('roulette-list').value;
