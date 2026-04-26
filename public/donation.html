@@ -238,16 +238,7 @@ function setUnit(v) {
   updatePreview();
 }
 
-// ── 로그 ──
-function
- {
-  const area = document.getElementById('log-area');
-  const d = document.createElement('div');
-  d.className = 'log-line' + (type ? ' '+type : '');
-  d.textContent = `[${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}] ${msg}`;
-  area.appendChild(d);
-  area.scrollTop = area.scrollHeight;
-}
+
 
 // ── 상태 표시 ──
 function setStatus(on) {
