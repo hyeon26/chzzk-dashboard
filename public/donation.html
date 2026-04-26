@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>후원 룰렛 | 첫째와둘째</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f7ff;--surface:#fff;--surface2:#f0effe;
+  --text:#1a1033;--text2:#7b6fa0;--text3:#a99fcc;
+  --accent:#5B4AE8;--accent2:#7c6ef0;--accent-light:#ede9fe;
+  --green:#10b981;--green-light:#d1fae5;
+  --amber:#f59e0b;--amber-light:#fef3c7;
+  --red:#ef4444;
+  --border:rgba(91,74,232,.1);--border2:rgba(91,74,232,.2);
+  --shadow:0 2px 12px rgba(91,74,232,.08);--shadow-md:0 4px 24px rgba(91,74,232,.13);
+  --radius:14px;--radius-sm:8px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0f0d1a;--surface:#1a1730;--surface2:#221f38;
+  --text:#ede9fe;--text2:#9d8fcc;--text3:#5c4f88;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+  --shadow:0 2px 12px rgba(0,0,0,.3);--shadow-md:0 4px 24px rgba(0,0,0,.4);
+  --accent-light:#1e1a38;--green-light:#052e16;--amber-light:#1c1200;
+}}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* 헤더 */
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;box-shadow:var(--shadow)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.logo-text{font-size:16px;font-weight:900;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--text2)}
+.status-area{display:flex;align-items:center;gap:10px}
+.status-dot{width:9px;height:9px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
+.status-dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.2);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(16,185,129,.2)}50%{box-shadow:0 0 0 6px rgba(16,185,129,.05)}}
+.status-text{font-size:12px;font-weight:600;color:var(--text2)}
+
+/* 레이아웃 */
+.wrap{display:grid;grid-template-columns:340px 1fr;gap:20px;padding:24px 28px;max-width:1400px;margin:0 auto}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+
+/* 카드 */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.card-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
+
+/* 설정 패널 */
+.setting-group{display:flex;flex-direction:column;gap:14px}
+.setting-row{display:flex;flex-direction:column;gap:6px}
+.setting-label{font-size:12px;font-weight:600;color:var(--text2)}
+.setting-input{width:100%;padding:10px 13px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;background:var(--surface2);color:var(--text);font-family:inherit;outline:none;transition:border-color .15s}
+.setting-input:focus{border-color:var(--accent)}
+.setting-hint{font-size:11px;color:var(--text3)}
+
+/* 프리셋 버튼 */
+.preset-btns{display:flex;gap:6px;flex-wrap:wrap}
+.preset-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.preset-btn:hover,.preset-btn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+
+/* 연결 버튼 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;border-radius:var(--radius-sm);border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;width:100%;margin-top:4px}
+.btn-connect{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(91,74,232,.3)}
+.btn-connect:hover{opacity:.88}
+.btn-connect:disabled{opacity:.45;cursor:not-allowed}
+.btn-disconnect{background:var(--red);color:#fff}
+.btn-disconnect:hover{opacity:.88}
+.btn-copy{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(16,185,129,.3)}
+.btn-copy:hover{opacity:.88}
+.btn-clear{background:var(--surface2);color:var(--text2);border:1.5px solid var(--border2)}
+.btn-clear:hover{background:var(--border2)}
+.btn-open{background:var(--amber);color:#fff}
+.btn-open:hover{opacity:.88}
+
+/* 오른쪽 패널 */
+.right-panel{display:flex;flex-direction:column;gap:16px}
+
+/* 통계 행 */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-box{background:var(--surface2);border-radius:var(--radius-sm);padding:14px;text-align:center}
+.stat-num{font-size:24px;font-weight:900;color:var(--text);line-height:1}
+.stat-label{font-size:11px;color:var(--text2);margin-top:4px}
+
+/* 도네 피드 */
+.feed-wrap{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;max-height:340px;padding-right:4px}
+.feed-item{padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);animation:slideIn .25s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.feed-item.mission{border-color:rgba(245,158,11,.3);background:var(--amber-light)}
+.feed-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.feed-nick{font-size:13px;font-weight:700;color:var(--text)}
+.feed-amt{font-size:13px;font-weight:700;color:var(--accent)}
+.feed-item.mission .feed-amt{color:var(--amber)}
+.feed-votes{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--accent-light);color:var(--accent);flex-shrink:0}
+.feed-item.mission .feed-votes{background:var(--amber-light);color:var(--amber)}
+.feed-msg{font-size:11px;color:var(--text2);margin-top:4px}
+.feed-time{font-size:10px;color:var(--text3);margin-top:2px}
+.feed-empty{text-align:center;padding:40px;color:var(--text3);font-size:13px}
+
+/* 룰렛 목록 */
+.roulette-textarea{width:100%;height:180px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'Noto Sans KR',monospace,sans-serif;font-size:13px;padding:12px;resize:vertical;outline:none;line-height:1.7;transition:border-color .15s}
+.roulette-textarea:focus{border-color:var(--accent)}
+.roulette-actions{display:flex;gap:8px;margin-top:8px}
+.roulette-actions .btn{margin-top:0;flex:1}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="logo" href="/">
+    <div>
+      <div class="logo-text">첫째와둘째</div>
+      <div class="logo-sub">후원 룰렛</div>
+    </div>
+  </a>
+  <div class="status-area">
+    <div class="status-dot" id="status-dot"></div>
+    <span class="status-text" id="status-text">연결 안됨</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 왼쪽: 설정 -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <div class="card">
+      <div class="card-title">⚙️ 연결</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-connect" id="btn-start" onclick="startConnect()" style="flex:1">▶ 시작</button>
+        <button class="btn btn-disconnect" id="btn-stop" onclick="stopConnect()" style="flex:1;display:none">⏹ 중단</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚙️ 단위 금액 설정</div>
+      <div class="setting-group">
+        <div class="setting-row">
+          <div class="setting-label">단위 금액 (원)</div>
+          <input class="setting-input" id="inp-unit" type="number" min="100" step="100" value="1000" oninput="updatePreview()">
+          <div class="setting-hint" id="unit-preview">1,000원 = 투표권 1개</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">빠른 설정</div>
+          <div class="preset-btns">
+            <button class="preset-btn active" onclick="setUnit(1000)">1,000원</button>
+            <button class="preset-btn" onclick="setUnit(2000)">2,000원</button>
+            <button class="preset-btn" onclick="setUnit(5000)">5,000원</button>
+            <button class="preset-btn" onclick="setUnit(10000)">10,000원</button>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 오른쪽 -->
+  <div class="right-panel">
+
+    <!-- 통계 -->
+    <div class="card">
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-num" id="stat-total-done">0</div>
+          <div class="stat-label">총 후원 수</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-total-amt">0</div>
+          <div class="stat-label">총 금액 (원)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-total-items">0</div>
+          <div class="stat-label">룰렛 항목 수</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 도네 피드 -->
+    <div class="card" style="flex:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">💰 실시간 후원 내역</div>
+        <span style="font-size:11px;color:var(--text3)" id="feed-count">0건</span>
+      </div>
+      <div class="feed-wrap" id="feed-wrap">
+        <div class="feed-empty">후원을 기다리는 중...</div>
+      </div>
+    </div>
+
+    <!-- 룰렛 목록 -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="card-title" style="margin:0">🎰 룰렛 목록</div>
+        <span style="font-size:11px;color:var(--text3)">lazygyu 룰렛에 붙여넣기용</span>
+      </div>
+      <textarea class="roulette-textarea" id="roulette-list" readonly placeholder="후원이 들어오면 자동으로 추가됩니다&#10;예) 홍길동*3,김철수*1"></textarea>
+      <div class="roulette-actions">
+        <button class="btn btn-copy" onclick="copyList()">📋 복사</button>
+        <button class="btn btn-open" onclick="openRoulette()">🎰 룰렛 열기</button>
+        <button class="btn btn-clear" onclick="clearList()">🗑 초기화</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── 고정 채널ID ──
+const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
+
+// ── 상태 ──
+let ws = null;
+let connected = false;
+let autoReconnect = false;
+let channelIdCache = null;
+let reconnectTimer = null;
+
+// 룰렛 항목 배열
+let rouletteItems = [];
+let totalDone = 0, totalAmt = 0, totalItems = 0;
+let feedCount = 0;
+
+// ── 설정 ──
+function getUnit() { return Math.max(100, parseInt(document.getElementById('inp-unit').value) || 1000); }
+
+function updatePreview() {
+  const u = getUnit();
+  document.getElementById('unit-preview').textContent = `${u.toLocaleString()}원 = 투표권 1개 · 5,000원이면 ${Math.floor(5000/u)}개`;
+}
+
+function setUnit(v) {
+  document.getElementById('inp-unit').value = v;
+  document.querySelectorAll('.preset-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.textContent.replace(/[^0-9]/g,'')) === v);
+  });
+  updatePreview();
+}
+
+// ── 로그 ──
+function
+ {
+  const area = document.getElementById('log-area');
+  const d = document.createElement('div');
+  d.className = 'log-line' + (type ? ' '+type : '');
+  d.textContent = `[${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}] ${msg}`;
+  area.appendChild(d);
+  area.scrollTop = area.scrollHeight;
+}
+
+// ── 상태 표시 ──
+function setStatus(on) {
+  connected = on;
+  document.getElementById('status-dot').className = 'status-dot' + (on ? ' on' : '');
+  document.getElementById('status-text').textContent = on ? '수집 중' : '연결 안됨';
+  document.getElementById('btn-start').style.display = on ? 'none' : '';
+  document.getElementById('btn-stop').style.display  = on ? ''     : 'none';
+  document.getElementById('btn-start').disabled = false;
+}
+
+// ── 중단 ──
+function stopConnect() {
+  autoReconnect = false;
+  if (reconnectTimer) clearTimeout(reconnectTimer);
+  if (ws) ws.close();
+  setStatus(false);
+}
+
+async function startConnect() {
+  const btn = document.getElementById('btn-start');
+  btn.disabled = true;
+  btn.textContent = '연결 중...';
+
+  try {
+    // live-status에서 chatChannelId + accessToken 한번에 가져오기
+    const r = await fetch('/api/live-status');
+    const data = await r.json();
+    let chatChannelId = data?.content?.chatChannelId || CHANNEL_ID;
+    let accessToken   = data?.content?.accessToken   || '';
+
+    // accessToken 없으면 별도 요청
+    if (!accessToken) {
+      const tr = await fetch(`/api/access-token?channelId=${encodeURIComponent(chatChannelId)}`);
+      const td = await tr.json();
+      accessToken   = td?.content?.accessToken   || '';
+      chatChannelId = td?.content?.chatChannelId || chatChannelId;
+    }
+
+    channelIdCache = chatChannelId;
+    autoReconnect  = true;
+    connectWS(chatChannelId, accessToken);
+  } catch(e) {
+    btn.disabled = false;
+  }
+}
+
+function connectWS(channelId, accessToken) {
+  ws = new WebSocket('wss://kr-ss1.chat.naver.com/chat');
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ver:'2',cmd:100,svcid:'game',cid:channelId,bdy:{uid:null,devType:2001,accTkn:accessToken,auth:'READ'},tid:1}));
+    setStatus(true);
+  };
+
+  ws.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      // 핑퐁
+      if (msg.cmd === 0) ws.send(JSON.stringify({ver:'2',cmd:10000}));
+      // 도네이션 (93102)
+      if (msg.cmd === 93102 && msg.bdy) {
+        const dons = Array.isArray(msg.bdy) ? msg.bdy : [msg.bdy];
+        dons.forEach(d => handleDonation(d));
+      }
+    } catch(err) {}
+  };
+
+  ws.onclose = () => {
+    setStatus(false);
+    if (autoReconnect && channelIdCache) {
+      reconnectTimer = setTimeout(async () => {
+        try {
+          const r = await fetch(`/api/access-token?channelId=${encodeURIComponent(channelIdCache)}`);
+          const data = await r.json();
+          const accessToken = data?.content?.accessToken || '';
+          connectWS(channelIdCache, accessToken);
+        } catch(e) {
+ }
+      }, 5000);
+    }
+  };
+
+  ws.onerror = () =>
+}
+
+// ── 도네 처리 ──
+function handleDonation(donation) {
+  try {
+    const profile = typeof donation.profile === 'string' ? JSON.parse(donation.profile) : donation.profile;
+    const extras  = typeof donation.extras  === 'string' ? JSON.parse(donation.extras)  : donation.extras;
+    const nick = profile?.nickname || '익명의 후원자';
+    const amt  = Number(extras?.payAmount || 0);
+    if (!amt) return;
+
+    const dtype = (extras?.donationType || '').toUpperCase();
+    const isMission = dtype === 'MISSION' || dtype === 'MISSION_PARTICIPATION';
+    if (isMission && !getMissionOn()) return;  // 미션 제외 설정 시
+
+    const msg = extras?.donationText || extras?.message || donation.msg || '';
+    const unit = getUnit();
+    const maxV = getMax();
+    let votes = Math.floor(amt / unit);
+    if (votes < 1) votes = 1;
+    if (maxV > 0) votes = Math.min(votes, maxV);
+
+    const time = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+    // 누적
+    voteMap[nick] = (voteMap[nick] || 0) + votes;
+    totalDone++;
+    totalAmt += amt;
+    totalVotes += votes;
+}원 → 투표권 ${votes}개 (누적 ${voteMap[nick]}개)`, 'ok');
+
+    // 피드 추가
+    addFeedItem(nick, amt, votes, isMission, msg, time);
+
+    // 통계 업데이트
+    document.getElementById('stat-total-done').textContent  = totalDone;
+    document.getElementById('stat-total-amt').textContent   = totalAmt.toLocaleString();
+    document.getElementById('stat-total-votes').textContent = totalVotes;
+
+    // 룰렛 목록 갱신
+    updateRouletteList();
+
+  } catch(e) { console.error(e); }
+}
+
+function addFeedItem(nick, amt, entry, count, msg, time) {
+  const wrap = document.getElementById('feed-wrap');
+  const empty = wrap.querySelector('.feed-empty');
+  if (empty) empty.remove();
+
+  const d = document.createElement('div');
+  d.className = 'feed-item';
+  d.innerHTML = `
+    <div class="feed-row">
+      <span class="feed-nick">💰 ${nick}</span>
+      <span class="feed-votes">+${count}개</span>
+      <span class="feed-amt">${amt.toLocaleString()}원</span>
+    </div>
+    <div class="feed-msg">🎰 ${entry}${count > 1 ? ` × ${count}` : ''}</div>
+    <div class="feed-time">${time}</div>
+  `;
+  wrap.insertBefore(d, wrap.firstChild);
+  feedCount++;
+  document.getElementById('feed-count').textContent = feedCount + '건';
+}
+
+// ── 룰렛 목록 갱신 ──
+function updateRouletteList() {
+  // 같은 항목 집계해서 *N 형식으로
+  const countMap = {};
+  rouletteItems.forEach(item => { countMap[item] = (countMap[item]||0) + 1; });
+  const entries = Object.entries(countMap).map(([item, cnt]) => cnt > 1 ? `${item}*${cnt}` : item);
+  document.getElementById('roulette-list').value = entries.join(',');
+}
+
+// ── 액션 버튼 ──
+function copyList() {
+  const ta = document.getElementById('roulette-list');
+  if (!ta.value) { alert('룰렛 목록이 비어있어요'); return; }
+  navigator.clipboard.writeText(ta.value).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✅ 복사됨!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+function openRoulette() {
+  const list = document.getElementById('roulette-list').value;
+  const url = 'https://lazygyu.github.io/roulette/';
+  if (list) {
+    // URL 파라미터로 이름 전달 (lazygyu 룰렛이 ?names= 지원)
+    window.open(url + '?names=' + encodeURIComponent(list), '_blank');
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
+function clearList() {
+  if (!confirm('룰렛 목록과 투표권 기록을 모두 초기화할까요?')) return;
+  rouletteItems = [];
+  totalDone = 0; totalAmt = 0; totalItems = 0; feedCount = 0;
+  document.getElementById('roulette-list').value = '';
+  document.getElementById('feed-wrap').innerHTML = '<div class="feed-empty">후원을 기다리는 중...</div>';
+  document.getElementById('feed-count').textContent = '0건';
+  document.getElementById('stat-total-done').textContent  = '0';
+  document.getElementById('stat-total-amt').textContent   = '0';
+  document.getElementById('stat-total-items').textContent = '0';
+}
+
+// ── 20초 핑퐁 ──
+setInterval(() => {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ver:'2',cmd:10000}));
+  }
+}, 20000);
+
+// ── 초기화 ──
+updatePreview();
+
+</script>
+</body>
+</html>
