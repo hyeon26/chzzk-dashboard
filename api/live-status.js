@@ -23,18 +23,14 @@ export default async function handler(req, res) {
     );
     const detail = await detailRes.json();
 
-    // 디버그용
-    const hasNid = !!nidCookie;
-    const rawStatus = detail?.content?.status;
     const chatChannelId = detail?.content?.chatChannelId;
-    const status = rawStatus;
+    const status = detail?.content?.status;
     const liveTitle = detail?.content?.liveTitle || '';
 
     if (!chatChannelId) {
       return res.status(200).json({
         content: { status: 'CLOSED', chatChannelId: CHANNEL_ID, accessToken: '', liveTitle: '' },
         needLogin: !nidCookie,
-        debug: { hasNid, rawStatus, detail: detail?.content ? { status: detail.content.status, chatChannelId: detail.content.chatChannelId } : null }
       });
     }
 
@@ -48,7 +44,6 @@ export default async function handler(req, res) {
     res.status(200).json({
       content: { status, chatChannelId, accessToken: chatToken, liveTitle },
       needLogin: false,
-      debug: { hasNid, rawStatus }
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
