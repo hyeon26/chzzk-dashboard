@@ -383,9 +383,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   <div class="tab" onclick="switchTab('tools',this)">🔗 사이트</div>
   <div class="tab" onclick="switchTab('chat',this)">💬 채팅 수집</div>
   <div class="tab" onclick="switchTab('clips',this)">🎞 클립</div>
-  <a href="/api/auth/login" style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#03C75A;color:#fff;border-radius:8px;text-decoration:none;font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;margin:auto 0 auto 8px">
+  <a id="naver-login-btn" href="/api/auth/login" style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#03C75A;color:#fff;border-radius:8px;text-decoration:none;font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;margin:auto 0 auto 8px">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
-    네이버 로그인
+    <span id="naver-login-text">네이버 로그인</span>
   </a>
 </div>
 
@@ -1374,14 +1374,44 @@ function handleDonation(donation){
 
 // Vercel API 라우트 (CORS 없이 서버에서 직접 호출)
 async function fetchLiveStatus(){
-  const r = await fetch('/api/live-status');
-  if(!r.ok) throw new Error(r.status);
-  return r.json();
+  const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
+  // 브라우저에서 직접 치지직 API 호출 (로그인 쿠키 자동 포함)
+  try {
+    const r = await fetch(`https://api.chzzk.naver.com/service/v3/channels/${CHANNEL_ID}/live-detail`, {
+      credentials: 'include',
+    });
+    if(!r.ok) throw new Error(r.status);
+    const detail = await r.json();
+    const chatChannelId = detail?.content?.chatChannelId;
+    const status = detail?.content?.status;
+    const liveTitle = detail?.content?.liveTitle || '';
+    if(!chatChannelId) return { content: { status: 'CLOSED', chatChannelId: CHANNEL_ID, accessToken: '', liveTitle: '' }, needLogin: false };
+    // 채팅 토큰도 직접 가져오기
+    const tokenR = await fetch(`https://comm-api.game.naver.com/nng_main/v1/chats/access-token?channelId=${chatChannelId}&chatType=STREAMING`, {
+      credentials: 'include',
+    });
+    const tokenData = await tokenR.json();
+    const accessToken = tokenData?.content?.accessToken || '';
+    return { content: { status, chatChannelId, accessToken, liveTitle }, needLogin: false };
+  } catch(e) {
+    // CORS 실패 시 서버 API로 폴백
+    const r = await fetch('/api/live-status');
+    if(!r.ok) throw new Error(r.status);
+    return r.json();
+  }
 }
 async function fetchAccessToken(channelId){
-  const r = await fetch(`/api/access-token?channelId=${encodeURIComponent(channelId)}`);
-  if(!r.ok) throw new Error(r.status);
-  return r.json();
+  try {
+    const r = await fetch(`https://comm-api.game.naver.com/nng_main/v1/chats/access-token?channelId=${encodeURIComponent(channelId)}&chatType=STREAMING`, {
+      credentials: 'include',
+    });
+    if(!r.ok) throw new Error(r.status);
+    return r.json();
+  } catch(e) {
+    const r = await fetch(`/api/access-token?channelId=${encodeURIComponent(channelId)}`);
+    if(!r.ok) throw new Error(r.status);
+    return r.json();
+  }
 }
 
 function chatOnMessage(e){
@@ -1659,9 +1689,29 @@ async function checkLive(){
     if(data?.content?.chatChannelId && !chatChannelIdCache){
       chatChannelIdCache = data.content.chatChannelId;
     }
-    // 로그인 버튼 표시
+    // 로그인 상태 버튼 업데이트
     const loginBtn = document.getElementById('naver-login-btn');
-    if(loginBtn) loginBtn.style.display = data?.needLogin ? 'flex' : 'none';
+    const loginText = document.getElementById('naver-login-text');
+    if(loginBtn && loginText){
+      if(data?.needLogin === false){
+        // 닉네임 쿠키 읽기
+        const nickname = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('naver_nickname='))?.split('=')[1];
+        const displayName = nickname ? decodeURIComponent(nickname) : '로그인됨';
+        loginBtn.style.background = '#03C75A';
+        loginBtn.style.border = 'none';
+        loginBtn.style.color = '#fff';
+        loginBtn.href = '#';
+        loginBtn.onclick = (e) => { e.preventDefault(); };
+        loginText.textContent = `✓ ${displayName}`;
+      } else {
+        loginBtn.style.background = '#03C75A';
+        loginBtn.style.border = 'none';
+        loginBtn.style.color = '#fff';
+        loginBtn.href = '/api/auth/login';
+        loginBtn.onclick = null;
+        loginText.textContent = '네이버 로그인';
+      }
+    }
     updateLiveBadge(isLive, title);
   }catch(e){}
 }
