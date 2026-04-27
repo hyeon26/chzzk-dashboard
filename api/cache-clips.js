@@ -1,19 +1,35 @@
+const FIREBASE_PROJECT = 'firstandsecond-b449c';
+const FIREBASE_API_KEY = 'AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw';
+
+async function getNidCookie() {
+  try {
+    const r = await fetch(
+      `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents/config/chzzkCookies?key=${FIREBASE_API_KEY}`
+    );
+    const data = await r.json();
+    const aut = data?.fields?.NID_AUT?.stringValue || '';
+    const ses = data?.fields?.NID_SES?.stringValue || '';
+    if(!aut || !ses) return '';
+    return `NID_AUT=${aut}; NID_SES=${ses}`;
+  } catch(e) { return ''; }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
   const API_KEY = process.env.YOUTUBE_API_KEY;
-  const FIREBASE_PROJECT = 'firstandsecond-b449c';
-  const FIREBASE_API_KEY = 'AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw';
+
+  const nidCookie = await getNidCookie();
 
   const headers = {
-    'User-Agent': 'Mozilla/5.0',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     'Referer': 'https://chzzk.naver.com/',
     'Origin': 'https://chzzk.naver.com',
+    ...(nidCookie ? { 'Cookie': nidCookie } : {}),
   };
 
   try {
-    // 치지직 전체 클립 수집
     const chzzkClips = [];
     let nextUID = null;
     do {
@@ -29,13 +45,11 @@ export default async function handler(req, res) {
       nextUID = data?.content?.page?.next?.clipUID || null;
     } while (nextUID);
 
-    // 유튜브 채널 ID
     const chRes = await fetch(
       `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=_brother-siste&key=${API_KEY}`
     ).then(r => r.json());
     const ytChannelId = chRes?.items?.[0]?.id;
 
-    // 유튜브 쇼츠 수집
     const ytRaw = [];
     let pageToken = null;
     if (ytChannelId) {
@@ -55,7 +69,6 @@ export default async function handler(req, res) {
       } while (pageToken);
     }
 
-    // 유튜브 조회수
     const viewsMap = {};
     for (let i = 0; i < ytRaw.length; i += 50) {
       const ids = ytRaw.slice(i, i + 50).map(v => v.id.videoId).join(',');
@@ -74,19 +87,14 @@ export default async function handler(req, res) {
       date: v.snippet.publishedAt, adult: false
     }));
 
-    // 날짜순 정렬
     const all = [...chzzkClips, ...ytItems].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // Firestore REST API로 저장
     const CHUNK_SIZE = 500;
     const chunks = [];
-    for (let i = 0; i < all.length; i += CHUNK_SIZE) {
-      chunks.push(all.slice(i, i + CHUNK_SIZE));
-    }
+    for (let i = 0; i < all.length; i += CHUNK_SIZE) chunks.push(all.slice(i, i + CHUNK_SIZE));
 
     const firestoreBase = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
 
-    // 청크 저장
     for (let i = 0; i < chunks.length; i++) {
       const docData = {
         fields: {
@@ -111,7 +119,6 @@ export default async function handler(req, res) {
           updatedAt: { stringValue: new Date().toISOString() }
         }
       };
-
       await fetch(`${firestoreBase}/clipCache/chunk_${i}?key=${FIREBASE_API_KEY}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -119,7 +126,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // 메타 저장
     await fetch(`${firestoreBase}/clipCache/meta?key=${FIREBASE_API_KEY}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -134,7 +140,6 @@ export default async function handler(req, res) {
 
     res.status(200).json({ success: true, total: all.length, chunks: chunks.length });
   } catch (e) {
-    console.error(e);
     res.status(500).json({ error: e.message });
   }
 }
