@@ -1,25 +1,12 @@
-const FIREBASE_PROJECT = 'firstandsecond-b449c';
-const FIREBASE_API_KEY = 'AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw';
-
-async function getNidCookie() {
-  try {
-    const r = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents/config/chzzkCookies?key=${FIREBASE_API_KEY}`
-    );
-    const data = await r.json();
-    const aut = data?.fields?.NID_AUT?.stringValue || '';
-    const ses = data?.fields?.NID_SES?.stringValue || '';
-    if(!aut || !ses) return '';
-    return `NID_AUT=${aut}; NID_SES=${ses}`;
-  } catch(e) { return ''; }
-}
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
   const API_KEY = process.env.YOUTUBE_API_KEY;
 
-  const nidCookie = await getNidCookie();
+  const nidCookie = [
+    process.env.CHZZK_NID_AUT ? `NID_AUT=${process.env.CHZZK_NID_AUT}` : '',
+    process.env.CHZZK_NID_SES ? `NID_SES=${process.env.CHZZK_NID_SES}` : '',
+  ].filter(Boolean).join('; ');
 
   const headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -64,8 +51,7 @@ export default async function handler(req, res) {
         if (pageToken) url.searchParams.set('pageToken', pageToken);
         const data = await fetch(url.toString()).then(r => r.json());
         (data?.items || []).forEach(v => ytShorts.push({
-          id: v.id.videoId,
-          title: v.snippet.title,
+          id: v.id.videoId, title: v.snippet.title,
           thumb: v.snippet.thumbnails?.medium?.url || v.snippet.thumbnails?.default?.url,
           date: v.snippet.publishedAt
         }));
@@ -80,9 +66,7 @@ export default async function handler(req, res) {
       const statsData = await fetch(
         `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${batch}&key=${API_KEY}`
       ).then(r => r.json());
-      (statsData?.items || []).forEach(v => {
-        viewsMap[v.id] = parseInt(v.statistics?.viewCount || 0);
-      });
+      (statsData?.items || []).forEach(v => { viewsMap[v.id] = parseInt(v.statistics?.viewCount || 0); });
     }
 
     const ytWithViews = ytShorts.map(v => ({
