@@ -1941,12 +1941,10 @@ window.openCookieModal = async() => {
   openModal('cookie-modal');
   document.getElementById('cookie-save-status').textContent = '';
   try {
-    const r = await fetch(`https://firestore.googleapis.com/v1/projects/firstandsecond-b449c/databases/(default)/documents/config/chzzkCookies?key=AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw`);
+    const r = await fetch('/api/get-cookies');
     const data = await r.json();
-    const aut = data?.fields?.NID_AUT?.stringValue || '';
-    const ses = data?.fields?.NID_SES?.stringValue || '';
-    document.getElementById('cookie-nid-aut').value = aut;
-    document.getElementById('cookie-nid-ses').value = ses;
+    document.getElementById('cookie-nid-aut').value = data.nidAut || '';
+    document.getElementById('cookie-nid-ses').value = data.nidSes || '';
   } catch(e) {}
 };
 
