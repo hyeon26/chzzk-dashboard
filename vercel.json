@@ -2,7 +2,7 @@
   "crons": [{ "path": "/api/cache-clips", "schedule": "0 19 * * *" }],
   "redirects": [
     {
-      "source": "/((?!vote$|roulette$|donation$|logo\\.png$|api/).*)",
+      "source": "/((?!vote$|logo\\.png$|api/).*)",
       "has": [{ "type": "host", "value": "cheotdool.vercel.app" }],
       "destination": "/__blocked__",
       "permanent": false
@@ -17,6 +17,6 @@
     { "source": "/vote", "destination": "/vote.html" },
     { "source": "/logs", "destination": "/logs.html" },
     { "source": "/roulette", "destination": "/roulette.html" },
-    { "source": "/donation", "destination": "/donation.html" }
+    { "source": "/cheeze", "destination": "/cheeze.html" }
   ]
 }
