@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧀 치즈 후원 내역</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a24;
+    --surface2: #22222f;
+    --border: #2e2e3e;
+    --text: #f0f0f8;
+    --text2: #9090b0;
+    --text3: #5a5a7a;
+    --yellow: #ffd700;
+    --yellow2: #ffb800;
+    --orange: #ff8c00;
+    --green: #22c55e;
+    --purple: #8b5cf6;
+    --red: #ef4444;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #1a1a24 0%, #0f0f13 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--yellow); letter-spacing: 2px; }
+  .logo span { color: var(--text2); font-size: 14px; font-family: 'Noto Sans KR', sans-serif; font-weight: 400; letter-spacing: 0; margin-left: 12px; }
+
+  .year-selector { display: flex; gap: 6px; }
+  .year-btn {
+    padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: transparent; color: var(--text2); font-size: 13px; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif; transition: all .2s;
+  }
+  .year-btn.active, .year-btn:hover { background: var(--yellow); color: #000; border-color: var(--yellow); font-weight: 700; }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px; }
+
+  /* 요약 카드 */
+  .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .summary-card {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+  .summary-card .label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+  .summary-card .value { font-size: 26px; font-weight: 900; color: var(--yellow); }
+  .summary-card .sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  /* 스트리머별 */
+  .section-title { font-size: 13px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 16px; }
+
+  .streamer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 32px; }
+  .streamer-card {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 16px; cursor: pointer; transition: all .2s;
+  }
+  .streamer-card:hover, .streamer-card.active { border-color: var(--yellow); background: var(--surface2); }
+  .streamer-card .s-name { font-weight: 700; font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .streamer-card img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+  .streamer-card .s-amount { font-size: 18px; font-weight: 900; color: var(--yellow); }
+  .streamer-card .s-count { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* 월별 달력 */
+  .calendar-section { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+  .months-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .month-card {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 16px; cursor: pointer; transition: all .2s;
+  }
+  .month-card:hover, .month-card.active { border-color: var(--yellow); }
+  .month-card .m-label { font-size: 12px; color: var(--text3); margin-bottom: 8px; }
+  .month-card .m-amount { font-size: 20px; font-weight: 900; color: var(--text); }
+  .month-card .m-amount.has-data { color: var(--yellow); }
+  .month-card .m-count { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* 일별 */
+  .day-calendar { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .day-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .day-cal-title { font-size: 16px; font-weight: 700; }
+  .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .day-label { font-size: 10px; color: var(--text3); text-align: center; padding: 4px 0; }
+  .day-label:first-child { color: var(--red); }
+  .day-label:last-child { color: #60a5fa; }
+  .day-cell {
+    aspect-ratio: 1; border-radius: 6px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; font-size: 11px; cursor: pointer;
+    transition: all .2s; border: 1.5px solid transparent;
+  }
+  .day-cell.empty { cursor: default; }
+  .day-cell.has-data { background: rgba(255,215,0,.1); border-color: rgba(255,215,0,.3); }
+  .day-cell.has-data:hover { background: rgba(255,215,0,.2); border-color: var(--yellow); }
+  .day-cell.selected { background: var(--yellow) !important; color: #000 !important; border-color: var(--yellow); }
+  .day-cell .d-num { font-weight: 700; }
+  .day-cell .d-amt { font-size: 9px; color: var(--yellow); }
+  .day-cell.selected .d-amt { color: #000; }
+
+  /* 상세 내역 */
+  .detail-panel {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 20px; margin-top: 24px; display: none;
+  }
+  .detail-panel.show { display: block; }
+  .detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .detail-title { font-size: 15px; font-weight: 700; }
+  .detail-total { font-size: 18px; font-weight: 900; color: var(--yellow); }
+  .detail-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
+  .detail-item {
+    background: var(--surface2); border-radius: 8px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .detail-item .di-type { font-size: 18px; flex-shrink: 0; }
+  .detail-item .di-info { flex: 1; min-width: 0; }
+  .detail-item .di-text { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .detail-item .di-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .detail-item .di-amount { font-size: 15px; font-weight: 900; color: var(--yellow); flex-shrink: 0; }
+
+  .loading { text-align: center; padding: 60px; color: var(--text3); font-size: 14px; }
+  .bar-wrap { height: 4px; background: var(--surface2); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--yellow); border-radius: 2px; transition: width .3s; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🧀 CHEEZE <span>치즈 후원 내역</span></div>
+  <div class="year-selector" id="year-selector"></div>
+</header>
+
+<div class="container">
+  <div id="loading" class="loading">불러오는 중...</div>
+  <div id="content" style="display:none">
+
+    <!-- 요약 -->
+    <div class="summary" id="summary"></div>
+
+    <!-- 스트리머별 -->
+    <div class="section-title">스트리머별</div>
+    <div class="streamer-grid" id="streamer-grid"></div>
+
+    <!-- 월별 + 일별 달력 -->
+    <div class="section-title" id="calendar-title">월별 후원</div>
+    <div class="calendar-section">
+      <div class="months-grid" id="months-grid"></div>
+      <div class="day-calendar" id="day-calendar" style="display:none">
+        <div class="day-cal-header">
+          <div class="day-cal-title" id="day-cal-title"></div>
+        </div>
+        <div class="day-grid" id="day-grid"></div>
+      </div>
+    </div>
+
+    <!-- 일별 상세 -->
+    <div class="detail-panel" id="detail-panel">
+      <div class="detail-header">
+        <div class="detail-title" id="detail-title"></div>
+        <div class="detail-total" id="detail-total"></div>
+      </div>
+      <div class="detail-list" id="detail-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let allData = [];
+let currentYear = new Date().getFullYear();
+let selectedStreamer = null;
+let selectedMonth = null;
+
+const typeIcon = { CHAT: '💰', MISSION: '🎯', MISSION_PARTICIPATION: '🎯', VIDEO: '🎬' };
+const typeLabel = { CHAT: '채팅 후원', MISSION: '미션', MISSION_PARTICIPATION: '미션 참여', VIDEO: '영상 후원' };
+
+async function loadData(year) {
+  document.getElementById('loading').style.display = '';
+  document.getElementById('content').style.display = 'none';
+  try {
+    const r = await fetch(`/api/cheese-history?year=${year}`);
+    const json = await r.json();
+    allData = json?.content?.data || [];
+    render();
+  } catch(e) {
+    document.getElementById('loading').textContent = '불러오기 실패';
+  }
+}
+
+function render() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = '';
+
+  const filtered = selectedStreamer
+    ? allData.filter(d => d.channelName === selectedStreamer)
+    : allData;
+
+  renderSummary(filtered);
+  renderStreamers();
+  renderMonths(filtered);
+}
+
+function renderSummary(data) {
+  const total = data.reduce((s, d) => s + d.payAmount, 0);
+  const count = data.length;
+  const streamerCount = new Set(data.map(d => d.channelName)).size;
+  const maxDay = (() => {
+    const byDay = {};
+    data.forEach(d => {
+      const day = d.purchaseDate.slice(0, 10);
+      byDay[day] = (byDay[day] || 0) + d.payAmount;
+    });
+    return Math.max(0, ...Object.values(byDay));
+  })();
+
+  document.getElementById('summary').innerHTML = `
+    <div class="summary-card">
+      <div class="label">총 후원 금액</div>
+      <div class="value">${total.toLocaleString()}원</div>
+      <div class="sub">${count}건</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">평균 후원</div>
+      <div class="value">${count ? Math.round(total/count).toLocaleString() : 0}원</div>
+      <div class="sub">건당 평균</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">스트리머 수</div>
+      <div class="value">${streamerCount}명</div>
+      <div class="sub">후원한 채널</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">최다 일 후원</div>
+      <div class="value">${maxDay.toLocaleString()}원</div>
+      <div class="sub">하루 최대</div>
+    </div>
+  `;
+}
+
+function renderStreamers() {
+  const byStreamer = {};
+  allData.forEach(d => {
+    if(!byStreamer[d.channelName]) byStreamer[d.channelName] = { total: 0, count: 0, img: d.channelImageUrl };
+    byStreamer[d.channelName].total += d.payAmount;
+    byStreamer[d.channelName].count++;
+  });
+  const maxTotal = Math.max(...Object.values(byStreamer).map(s => s.total));
+  const sorted = Object.entries(byStreamer).sort((a,b) => b[1].total - a[1].total);
+
+  document.getElementById('streamer-grid').innerHTML = sorted.map(([name, info]) => `
+    <div class="streamer-card ${selectedStreamer === name ? 'active' : ''}" onclick="selectStreamer('${name}')">
+      <div class="s-name">
+        <img src="${info.img}" onerror="this.style.display='none'">
+        ${name}
+      </div>
+      <div class="s-amount">${info.total.toLocaleString()}원</div>
+      <div class="s-count">${info.count}건</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(info.total/maxTotal*100)}%"></div></div>
+    </div>
+  `).join('');
+}
+
+function selectStreamer(name) {
+  selectedStreamer = selectedStreamer === name ? null : name;
+  selectedMonth = null;
+  document.getElementById('day-calendar').style.display = 'none';
+  document.getElementById('detail-panel').classList.remove('show');
+  render();
+}
+
+function renderMonths(data) {
+  const byMonth = {};
+  data.forEach(d => {
+    const m = d.purchaseDate.slice(0, 7);
+    if(!byMonth[m]) byMonth[m] = { total: 0, count: 0 };
+    byMonth[m].total += d.payAmount;
+    byMonth[m].count++;
+  });
+
+  const months = Array.from({length: 12}, (_, i) => {
+    const m = `${currentYear}-${String(i+1).padStart(2,'0')}`;
+    return { key: m, label: `${i+1}월`, ...(byMonth[m] || { total: 0, count: 0 }) };
+  });
+
+  document.getElementById('months-grid').innerHTML = months.map(m => `
+    <div class="month-card ${selectedMonth === m.key ? 'active' : ''}" onclick="selectMonth('${m.key}', '${m.label}')">
+      <div class="m-label">${m.label}</div>
+      <div class="m-amount ${m.total > 0 ? 'has-data' : ''}">${m.total > 0 ? m.total.toLocaleString()+'원' : '-'}</div>
+      <div class="m-count">${m.count > 0 ? m.count+'건' : ''}</div>
+    </div>
+  `).join('');
+}
+
+function selectMonth(monthKey, label) {
+  selectedMonth = monthKey;
+  document.getElementById('detail-panel').classList.remove('show');
+  renderDayCalendar(monthKey, label);
+  render();
+}
+
+function renderDayCalendar(monthKey, label) {
+  const [year, month] = monthKey.split('-').map(Number);
+  const filtered = (selectedStreamer ? allData.filter(d => d.channelName === selectedStreamer) : allData)
+    .filter(d => d.purchaseDate.startsWith(monthKey));
+
+  const byDay = {};
+  filtered.forEach(d => {
+    const day = d.purchaseDate.slice(8, 10);
+    if(!byDay[day]) byDay[day] = { total: 0, count: 0 };
+    byDay[day].total += d.payAmount;
+    byDay[day].count++;
+  });
+
+  const firstDay = new Date(year, month-1, 1).getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+
+  document.getElementById('day-cal-title').textContent = `${year}년 ${label}`;
+  document.getElementById('day-calendar').style.display = '';
+
+  const dayLabels = ['일','월','화','수','목','금','토'].map(d => `<div class="day-label">${d}</div>`).join('');
+  const emptyCells = Array(firstDay).fill('<div class="day-cell empty"></div>').join('');
+  const dayCells = Array.from({length: daysInMonth}, (_, i) => {
+    const day = String(i+1).padStart(2,'0');
+    const info = byDay[day];
+    return `<div class="day-cell ${info ? 'has-data' : ''}" onclick="${info ? `selectDay('${monthKey}-${day}', '${label} ${i+1}일')` : ''}">
+      <span class="d-num">${i+1}</span>
+      ${info ? `<span class="d-amt">${info.total >= 10000 ? Math.round(info.total/1000)+'K' : info.total}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('day-grid').innerHTML = dayLabels + emptyCells + dayCells;
+}
+
+function selectDay(dateKey, label) {
+  // 선택된 날짜 하이라이트
+  document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  const filtered = (selectedStreamer ? allData.filter(d => d.channelName === selectedStreamer) : allData)
+    .filter(d => d.purchaseDate.startsWith(dateKey));
+
+  const total = filtered.reduce((s,d) => s + d.payAmount, 0);
+
+  document.getElementById('detail-title').textContent = `${label} 후원 내역`;
+  document.getElementById('detail-total').textContent = `총 ${total.toLocaleString()}원`;
+  document.getElementById('detail-list').innerHTML = filtered.map(d => `
+    <div class="detail-item">
+      <div class="di-type">${typeIcon[d.donationType] || '💰'}</div>
+      <div class="di-info">
+        <div class="di-text">${d.donationText || '(내용 없음)'}</div>
+        <div class="di-meta">${d.channelName} · ${typeLabel[d.donationType] || d.donationType} · ${d.purchaseDate.slice(11, 16)}${d.donationVideoUrl ? ` · <a href="${d.donationVideoUrl}" target="_blank" style="color:var(--yellow)">영상 보기</a>` : ''}</div>
+      </div>
+      <div class="di-amount">${d.payAmount.toLocaleString()}원</div>
+    </div>
+  `).join('');
+  document.getElementById('detail-panel').classList.add('show');
+}
+
+// 연도 선택기
+function initYearSelector() {
+  const cur = new Date().getFullYear();
+  const years = [cur, cur-1, cur-2];
+  document.getElementById('year-selector').innerHTML = years.map(y => `
+    <button class="year-btn ${y === currentYear ? 'active' : ''}" onclick="changeYear(${y})">${y}</button>
+  `).join('');
+}
+
+function changeYear(year) {
+  currentYear = year;
+  selectedStreamer = null;
+  selectedMonth = null;
+  initYearSelector();
+  loadData(year);
+}
+
+initYearSelector();
+loadData(currentYear);
+</script>
+</body>
+</html>
