@@ -1,26 +1,15 @@
-const FIREBASE_PROJECT = 'firstandsecond-b449c';
-const FIREBASE_API_KEY = 'AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw';
-
-async function getNidCookie() {
-  try {
-    const r = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents/config/chzzkCookies?key=${FIREBASE_API_KEY}`
-    );
-    const data = await r.json();
-    const aut = data?.fields?.NID_AUT?.stringValue || '';
-    const ses = data?.fields?.NID_SES?.stringValue || '';
-    if(!aut || !ses) return '';
-    return `NID_AUT=${aut}; NID_SES=${ses}`;
-  } catch(e) { return ''; }
-}
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   const CHANNEL_ID = '48070f8882233efa7aee52519fee8fca';
   const API_KEY = process.env.YOUTUBE_API_KEY;
+  const FIREBASE_PROJECT = 'firstandsecond-b449c';
+  const FIREBASE_API_KEY = 'AIzaSyCe3izM-r1ljlhO5YKyBe_3jEHvXxHy7Yw';
 
-  const nidCookie = await getNidCookie();
+  const nidCookie = [
+    process.env.CHZZK_NID_AUT ? `NID_AUT=${process.env.CHZZK_NID_AUT}` : '',
+    process.env.CHZZK_NID_SES ? `NID_SES=${process.env.CHZZK_NID_SES}` : '',
+  ].filter(Boolean).join('; ');
 
   const headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -75,9 +64,7 @@ export default async function handler(req, res) {
       const statsData = await fetch(
         `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${API_KEY}`
       ).then(r => r.json());
-      (statsData?.items || []).forEach(v => {
-        viewsMap[v.id] = parseInt(v.statistics?.viewCount || 0);
-      });
+      (statsData?.items || []).forEach(v => { viewsMap[v.id] = parseInt(v.statistics?.viewCount || 0); });
     }
 
     const ytItems = ytRaw.map(v => ({
