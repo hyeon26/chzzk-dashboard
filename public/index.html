@@ -497,6 +497,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
             <button onclick="chatDownload()" class="chat-btn" style="background:var(--surface2);color:var(--text);border:1.5px solid var(--border2);white-space:nowrap;flex-shrink:0">⬇ <span class="btn-full">TXT </span>저장</button>
             <button onclick="chatClear()" class="chat-btn" style="background:var(--surface2);color:var(--text2);border:1.5px solid var(--border2);white-space:nowrap;flex-shrink:0">🗑 초기화</button>
             <button onclick="openSessionHistory()" class="chat-btn" style="background:var(--surface2);color:var(--text);border:1.5px solid var(--border2);white-space:nowrap;flex-shrink:0">📋 기록</button>
+            <button onclick="window.open('/analytics','_blank')" class="chat-btn" style="background:var(--surface2);color:var(--text);border:1.5px solid var(--border2);white-space:nowrap;flex-shrink:0">📊 분석</button>
             <button onclick="openCookieModal()" class="chat-btn" style="background:var(--surface2);color:var(--text2);border:1.5px solid var(--border2);white-space:nowrap;flex-shrink:0">🍪 쿠키</button>
           </div>
         </div>
@@ -813,7 +814,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <!-- 모달: 채팅 세션 기록 -->
 <div class="modal-bg" id="session-history-modal">
   <div class="modal" style="max-width:560px">
-    <h3>📋 채팅 기록 (최근 3일)</h3>
+    <h3>📋 채팅 기록</h3>
     <div id="session-list" style="margin-top:12px;max-height:400px;overflow-y:auto">
       <div class="loading">불러오는 중...</div>
     </div>
@@ -1287,7 +1288,6 @@ let chatLogs=[], userMap={}, chatWs=null, chatConnected=false, chatSessionStart=
 let chatAutoReconnect=true, chatReconnectTimer=null, chatChannelIdCache=null, chatTokenCache=null;
 let currentLiveTitle='';
 let chatSessionId=null; // Firebase 세션 ID
-const CHAT_TTL_DAYS=3; // 보관 기간
 let doneMap={}, doneAnon=0;
 let missionMap={}, missionAnon=0;
 let doneLogs=[];
@@ -1303,8 +1303,7 @@ function chatAddMsg(time,nick,msg){
   chatLogs.push({time,nick,msg}); userMap[nick]=(userMap[nick]||0)+1;
   // Firebase에 채팅 저장 (백그라운드)
   if(chatSessionId){
-    const expireAt = new Date(); expireAt.setDate(expireAt.getDate()+CHAT_TTL_DAYS);
-    addDoc(collection(db,`chatSessions/${chatSessionId}/chats`),{time,nick,msg,expireAt,createdAt:serverTimestamp()}).catch(()=>{});
+      addDoc(collection(db,`chatSessions/${chatSessionId}/chats`),{time,nick,msg,createdAt:serverTimestamp()}).catch(()=>{});
   }
   const log=document.getElementById('chat-log'), div=document.createElement('div');
   div.style.cssText='padding:2px 0;border-bottom:0.5px solid var(--border)';
@@ -1406,12 +1405,11 @@ function handleDonation(donation){
     }
     // Firebase에 도네/미션 저장
     if(chatSessionId){
-      const expireAt = new Date(); expireAt.setDate(expireAt.getDate()+CHAT_TTL_DAYS);
       addDoc(collection(db,`chatSessions/${chatSessionId}/donations`),{
         time: new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
         nick: nick||'익명의 후원자', amt, type: isMission?'mission':'donation',
         message: msg,
-        expireAt, createdAt: serverTimestamp()
+        createdAt: serverTimestamp()
       }).catch(()=>{});
     }
   } catch(e){}
@@ -1482,22 +1480,8 @@ window.openSessionHistory=async()=>{
   try {
     const snap=await getDocs(query(collection(db,'chatSessions'),orderBy('startedAt','desc')));
     const sessions=snap.docs.map(d=>({id:d.id,...d.data()}));
-    // 3일 지난 세션 자동 삭제
-    const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-3);
-    for(const s of sessions){
-      if(s.startedAt?.toDate?.() < cutoff){
-        try {
-          const cSnap=await getDocs(collection(db,`chatSessions/${s.id}/chats`));
-          const dSnap=await getDocs(collection(db,`chatSessions/${s.id}/donations`));
-          await batchDelete(cSnap.docs);
-          await batchDelete(dSnap.docs);
-          const b=writeBatch(db); b.delete(doc(db,'chatSessions',s.id)); await b.commit();
-        } catch(e){}
-      }
-    }
-    const valid=sessions.filter(s=>s.startedAt?.toDate?.()>cutoff||!s.startedAt);
-    if(!valid.length){ el.innerHTML='<div class="empty-state" style="padding:20px">기록이 없어요</div>'; return; }
-    el.innerHTML=valid.map(s=>{
+    if(!sessions.length){ el.innerHTML='<div class="empty-state" style="padding:20px">기록이 없어요</div>'; return; }
+    el.innerHTML=sessions.map(s=>{
       const d=s.startedAt?.toDate?.();
       const dateStr=d?`${d.getMonth()+1}/${d.getDate()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`:'';
       return `<div style="padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
@@ -1647,10 +1631,8 @@ window.chatConnect=async()=>{
       d.textContent=`── 채팅 수집 시작 ${chatSessionStart.toLocaleTimeString()} ──`; log.appendChild(d);
       // Firebase 세션 생성
       try {
-        const expireAt = new Date(); expireAt.setDate(expireAt.getDate()+CHAT_TTL_DAYS);
         const sessionRef = await addDoc(collection(db,'chatSessions'),{
           startedAt: serverTimestamp(),
-          expireAt,
           liveTitle: currentLiveTitle||'',
           chatChannelId: chatChannelIdCache
         });
