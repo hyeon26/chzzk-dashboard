@@ -29,9 +29,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 select,input{padding:8px 11px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;outline:none}
 select{min-width:260px}.btn{padding:8px 14px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;transition:opacity .15s}.btn:hover{opacity:.85}.btn:disabled{opacity:.45;cursor:not-allowed}.btn-primary{background:var(--accent);color:#fff}.btn-secondary{background:var(--surface2);color:var(--text);border:1.5px solid var(--border2)}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(135px,1fr));gap:10px;margin-bottom:10px;flex-shrink:0}.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;min-height:0}.stat-label{font-size:10px;color:var(--text3);font-weight:900;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}.stat-value{font-size:22px;font-weight:900;color:var(--text);line-height:1}.stat-sub{font-size:11px;color:var(--text2);margin-top:5px;word-break:break-word}
-#report{min-height:0;overflow:auto;padding-right:4px}.main{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr);gap:10px}.stack{display:flex;flex-direction:column;gap:10px;min-height:0}.section-title{font-size:13px;font-weight:900;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}.muted{font-size:12px;color:var(--text3);font-weight:600}.chart{height:190px;display:flex;align-items:flex-end;gap:4px;border-radius:var(--radius-sm);background:var(--surface2);padding:12px;overflow-x:auto}.bar{min-width:20px;flex:1;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--accent2),var(--accent));position:relative}.bar.hot{background:linear-gradient(180deg,#fbbf24,var(--amber))}.bar:hover::after{content:attr(data-tip);position:absolute;left:50%;bottom:100%;transform:translateX(-50%);white-space:nowrap;background:var(--text);color:var(--surface);font-size:11px;padding:4px 7px;border-radius:6px;margin-bottom:6px;z-index:3}.list{display:flex;flex-direction:column;gap:7px;max-height:280px;overflow-y:auto}.reaction-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border)}.reaction-row{align-items:flex-start}.rank{width:24px;text-align:right;font-size:11px;color:var(--text3);font-weight:900}.name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:700}.count{font-size:12px;font-weight:900;color:var(--accent);flex-shrink:0}.row-sub{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.4}.pill{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:999px;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:800}.empty,.loading{padding:36px 16px;text-align:center;color:var(--text2);background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius)}.keywords{display:flex;gap:7px;flex-wrap:wrap;max-height:96px;overflow-y:auto}.keyword{padding:6px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:12px;font-weight:800}.keyword b{color:var(--accent);margin-left:4px}.notice{font-size:12px;color:var(--text2);background:var(--accent-light);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:10px;line-height:1.5;flex-shrink:0}
-@media(max-width:1100px){body{overflow:auto;height:auto;min-height:100vh}.grid{grid-template-columns:repeat(2,1fr)}.main{grid-template-columns:1fr}.header{flex-direction:column}.controls{justify-content:flex-start}select{min-width:min(100%,320px)}#report{overflow:visible}.reaction-list{grid-template-columns:1fr}}
-@media(max-width:560px){body{padding:18px 14px}.grid{grid-template-columns:1fr}.controls{width:100%}.controls>*{width:100%}}
+#report{min-height:0;overflow:auto;padding-right:4px}.main{display:grid;grid-template-columns:1fr;gap:10px;max-width:1100px;margin:0 auto}.stack{display:flex;flex-direction:column;gap:10px;min-height:0}.section-title{font-size:13px;font-weight:900;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}.muted{font-size:12px;color:var(--text3);font-weight:600}.chart{height:190px;display:flex;align-items:flex-end;gap:4px;border-radius:var(--radius-sm);background:var(--surface2);padding:12px;overflow-x:auto}.bar{min-width:20px;flex:1;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--accent2),var(--accent));position:relative}.bar.hot{background:linear-gradient(180deg,#fbbf24,var(--amber))}.bar:hover::after{content:attr(data-tip);position:absolute;left:50%;bottom:100%;transform:translateX(-50%);white-space:nowrap;background:var(--text);color:var(--surface);font-size:11px;padding:4px 7px;border-radius:6px;margin-bottom:6px;z-index:3}.list{display:flex;flex-direction:column;gap:7px;max-height:280px;overflow-y:auto}.reaction-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border)}.reaction-row{align-items:flex-start}.rank{width:24px;text-align:right;font-size:11px;color:var(--text3);font-weight:900}.name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:700}.count{font-size:12px;font-weight:900;color:var(--accent);flex-shrink:0}.row-sub{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.4}.pill{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:999px;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:800}.empty,.loading{padding:36px 16px;text-align:center;color:var(--text2);background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius)}.keywords{display:flex;gap:7px;flex-wrap:wrap;max-height:96px;overflow-y:auto}.keyword{padding:6px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:12px;font-weight:800}.keyword b{color:var(--accent);margin-left:4px}.notice{font-size:12px;color:var(--text2);background:var(--accent-light);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:10px;line-height:1.5;flex-shrink:0}
+@media(max-width:1100px){body{overflow:auto;height:auto;min-height:100vh}.grid{grid-template-columns:repeat(2,1fr)}.header{flex-direction:column}.controls{justify-content:flex-start}select{min-width:min(100%,320px)}#report{overflow:visible}.reaction-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){body{padding:18px 14px}.grid{grid-template-columns:1fr}.reaction-list{grid-template-columns:1fr}.controls{width:100%}.controls>*{width:100%}}
 </style>
 </head>
 <body>
@@ -72,16 +72,6 @@ select{min-width:260px}.btn{padding:8px 14px;border-radius:var(--radius-sm);bord
       <div class="card">
         <div class="section-title">🔥 많이 나온 단어 <span class="muted">한 글자/일반 조사 제외</span></div>
         <div class="keywords" id="keywords"></div>
-      </div>
-    </div>
-    <div class="stack">
-      <div class="card">
-        <div class="section-title">🏆 채팅 참여 순위 <span class="muted" id="user-rank-label"></span></div>
-        <div class="list" id="user-rank"></div>
-      </div>
-      <div class="card">
-        <div class="section-title">💰 후원 순위 <span class="muted" id="donation-rank-label"></span></div>
-        <div class="list" id="donation-rank"></div>
       </div>
     </div>
   </div>
@@ -202,18 +192,6 @@ function getWords(chats){
   });
   return [...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,24);
 }
-function renderRank(id, entries, emptyText, valueFormatter){
-  const el = $(id);
-  el.innerHTML = '';
-  if(!entries.length){ addText(el, 'div', 'empty', emptyText); return; }
-  entries.slice(0,12).forEach(([name, count], index) => {
-    const row = document.createElement('div'); row.className = 'row';
-    addText(row, 'div', 'rank', String(index+1));
-    addText(row, 'div', 'name', name || '익명');
-    addText(row, 'div', 'count', valueFormatter ? valueFormatter(count) : count.toLocaleString());
-    el.appendChild(row);
-  });
-}
 function buildReactionBuckets(chats, donations){
   const buckets = new Map();
   function ensure(info){
@@ -316,13 +294,9 @@ async function analyzeSelected(){
     $('stat-donation').textContent = totalDonation.toLocaleString()+'원';
     $('stat-donation-count').textContent = `${donations.length.toLocaleString()}건 · ${donationEntries.length.toLocaleString()}명`;
     $('timeline-label').textContent = `5분 단위 · ${reactionBuckets.length.toLocaleString()}구간`;
-    $('user-rank-label').textContent = `${userEntries.length.toLocaleString()}명`;
-    $('donation-rank-label').textContent = `${donationEntries.length.toLocaleString()}명`;
 
     renderReactionRank(reactionBuckets);
     renderKeywords(getWords(chats));
-    renderRank('user-rank', userEntries, '참여자 기록이 없어요');
-    renderRank('donation-rank', donationEntries, '후원 기록이 없어요', value => value.toLocaleString()+'원');
     $('status').style.display = 'none';
     $('report').style.display = '';
   }catch(e){
