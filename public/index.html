@@ -1382,13 +1382,23 @@ function addMissionAmount(nick, delta){
   }
 }
 function safeDocId(value){ return String(value || '').replace(/[\/#?]/g, '_'); }
+function parseDonationAmount(value){
+  if(typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if(typeof value === 'string'){
+    const cleaned = value.replace(/[^\d.-]/g, '');
+    if(!cleaned) return 0;
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
 function handleDonation(donation){
   try {
     const profile = typeof donation.profile==='string' ? JSON.parse(donation.profile) : donation.profile;
     const extras  = typeof donation.extras==='string'  ? JSON.parse(donation.extras)  : donation.extras;
     console.log('도네 extras 전체:', JSON.stringify(extras));
     const nick = profile?.nickname || extras?.nickname || '';
-    let rawAmt = Number(extras?.totalPayAmount || extras?.payAmount || 0);
+    let rawAmt = parseDonationAmount(extras?.totalPayAmount ?? extras?.payAmount ?? 0);
     // donationType: CHAT=일반후원, MISSION=미션
     const dtype = extras?.donationType||'';
     const missionId = extras?.missionDonationId || extras?.donationId || '';
