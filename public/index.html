@@ -1291,6 +1291,7 @@ let chatSessionId=null; // Firebase 세션 ID
 let doneMap={}, doneAnon=0;
 let missionMap={}, missionAnon=0, missionRecords={};
 let doneLogs=[];
+let recentMissionEventMap={};
 function chatSetStatus(on){
   chatConnected=on;
   const dot=document.getElementById('chat-status-dot'), text=document.getElementById('chat-status-text');
@@ -1411,6 +1412,14 @@ function handleDonation(donation){
     const missionId = extras?.missionDonationId || extras?.donationId || extras?.missionId || '';
     const isMission = dtype.toUpperCase()==='MISSION' || dtype.toUpperCase()==='MISSION_PARTICIPATION' || !!extras?.missionDonationId || !!extras?.missionId;
     const missionStatus = getMissionStatusInfo(extras);
+    if(isMission && missionId){
+      const dedupeKey = `${missionId}_${missionStatus.status}_${missionStatus.success}_${rawAmt}_${extras?.type||''}`;
+      const nowTs = Date.now();
+      const prevTs = recentMissionEventMap[dedupeKey] || 0;
+      if(nowTs - prevTs < 2500) return;
+      recentMissionEventMap[dedupeKey] = nowTs;
+      Object.keys(recentMissionEventMap).forEach(k=>{ if(nowTs - recentMissionEventMap[k] > 15000) delete recentMissionEventMap[k]; });
+    }
     const isRejectedMission = isMission && missionStatus.status === 'REJECTED';
     const shouldCountMission = isMission && !missionStatus.pending && !isRejectedMission;
     if(!rawAmt && isMission && missionId && missionRecords[missionId]?.rawAmt) rawAmt = missionRecords[missionId].rawAmt;
@@ -1425,7 +1434,7 @@ function handleDonation(donation){
     const amountText = isMission && !missionStatus.success ? `${rawAmt.toLocaleString()}원` : `${countedAmt.toLocaleString()}원`;
     const shouldShowInDonationFeed = !isMission || shouldCountMission;
     const shouldShowInChatLog = !isMission || missionStatus.status === 'PENDING' || shouldCountMission;
-    div.innerHTML=`<span style="color:var(--text3)">[${time}]</span> <span style="color:#f59e0b;font-weight:700">${icon} ${nick||'익명의 후원자'}</span><span style="color:var(--text2)"> ${amountText} ${label}!</span>${isMission&&!missionStatus.success?`<span style="color:var(--text3);font-size:11px"> · 합산 제외</span>`:''}${msg?`<div style="color:var(--text2);font-size:12px;padding-left:4px;margin-top:2px">💬 ${msg}</div>`:''}`;
+    div.innerHTML=`<span style="color:var(--text3)">[${time}]</span> <span style="color:#f59e0b;font-weight:700">${icon} ${nick||'익명의 후원자'}</span><span style="color:var(--text2)"> ${amountText} ${label}!</span>${msg?`<div style="color:var(--text2);font-size:12px;padding-left:4px;margin-top:2px">💬 ${msg}</div>`:''}`;
     if(shouldShowInChatLog){
       log.appendChild(div);
       log.scrollTop=log.scrollHeight;
@@ -1437,7 +1446,7 @@ function handleDonation(donation){
       if(feed.querySelector('[data-empty]')) feed.innerHTML='';
       const fdiv = document.createElement('div');
       fdiv.style.cssText=`padding:8px 10px;border-radius:8px;background:${isMission?'rgba(245,158,11,.1)':'rgba(91,74,232,.07)'};border:1px solid ${isMission?'rgba(245,158,11,.2)':'var(--border)'}`;
-      fdiv.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:6px"><span style="font-weight:700;color:${isMission?'#f59e0b':'var(--accent)'}">${icon} ${nick||'익명의 후원자'}</span><span style="font-weight:700;color:var(--text)">${amountText}</span></div>${msg?`<div style="color:var(--text2);font-size:11px;margin-top:4px">💬 ${msg}</div>`:''}<div style="color:var(--text3);font-size:10px;margin-top:3px">${time} · ${label}${isMission&&!missionStatus.success?' · 합산 제외':''}</div>`;
+      fdiv.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:6px"><span style="font-weight:700;color:${isMission?'#f59e0b':'var(--accent)'}">${icon} ${nick||'익명의 후원자'}</span><span style="font-weight:700;color:var(--text)">${amountText}</span></div>${msg?`<div style="color:var(--text2);font-size:11px;margin-top:4px">💬 ${msg}</div>`:''}<div style="color:var(--text3);font-size:10px;margin-top:3px">${time} · ${label}</div>`;
       feed.appendChild(fdiv);
       feed.scrollTop = feed.scrollHeight;
     }
@@ -1533,7 +1542,7 @@ function chatOnMessage(e){
     const msg=JSON.parse(e.data);
     if(msg.cmd===93102||msg.cmd===93101||msg.cmd===93103||msg.cmd===10100) console.log('WS cmd:',msg.cmd, JSON.stringify(msg.bdy).slice(0,200));
     const donationCandidates = collectDonationCandidates(msg.bdy);
-    const missionStatusCandidates = collectMissionStatusCandidates(msg.bdy);
+    const missionStatusCandidates = donationCandidates.length ? [] : collectMissionStatusCandidates(msg.bdy);
     const seen = new Set();
 
     donationCandidates.forEach(d=>{
