@@ -1366,9 +1366,15 @@ function renderDone(){
   const status = String(extras?.status || '').toUpperCase();
   const successStatuses = ['SUCCESS','SUCCEEDED','SUCCESSFUL','COMPLETED','COMPLETE','DONE'];
   const failStatuses = ['FAIL','FAILED','CANCELED','CANCELLED','EXPIRED','REJECTED'];
-  const success = extras?.success === true || successStatuses.includes(status);
-  const failed = extras?.success === false || failStatuses.includes(status);
-  const pending = !success && !failed;
+  const pendingStatuses = ['PENDING','WAITING','IN_PROGRESS','ONGOING','OPEN'];
+
+  const statusIsSuccess = successStatuses.includes(status);
+  const statusIsFailed = failStatuses.includes(status);
+  const statusIsPending = pendingStatuses.includes(status);
+
+  const success = statusIsSuccess || (extras?.success === true && !statusIsPending);
+  const failed = statusIsFailed || (extras?.success === false && !statusIsPending && !statusIsSuccess);
+  const pending = statusIsPending || (!success && !failed);
   const label = success ? '성공' : failed ? '실패' : '대기';
   return { status, success, failed, pending, label };
 }
@@ -1396,6 +1402,7 @@ function handleDonation(donation){
   try {
     const profile = typeof donation.profile==='string' ? JSON.parse(donation.profile) : donation.profile;
     const extras  = typeof donation.extras==='string'  ? JSON.parse(donation.extras)  : donation.extras;
+    if(!extras || typeof extras!=='object') return;
     console.log('도네 extras 전체:', JSON.stringify(extras));
     const nick = profile?.nickname || extras?.nickname || '';
     let rawAmt = parseDonationAmount(extras?.totalPayAmount ?? extras?.payAmount ?? 0);
@@ -1473,6 +1480,7 @@ async function fetchAccessToken(channelId){
   return r.json();
 }
 
+  
 function collectDonationCandidates(payload, bucket=[]){
   if(!payload) return bucket;
   if(Array.isArray(payload)){
@@ -1485,9 +1493,29 @@ function collectDonationCandidates(payload, bucket=[]){
     const extrasObj = typeof candidate.extras==='string' ? (()=>{ try{return JSON.parse(candidate.extras);}catch{return null;} })() : candidate.extras;
     const hasMissionShape = !!(extrasObj?.missionDonationId || extrasObj?.missionId || extrasObj?.donationType==='MISSION' || extrasObj?.status);
     const hasAmountShape = candidate.payAmount!=null || candidate.totalPayAmount!=null || candidate.amt!=null;
-    if(candidate.extras || hasMissionShape || hasAmountShape) bucket.push(candidate);
+    const hasExtrasObject = typeof candidate.extras==='object' && candidate.extras!==null;
+    const hasExtrasString = typeof candidate.extras==='string' && candidate.extras.trim().startsWith('{');
+    if((hasExtrasObject || hasExtrasString) && (hasMissionShape || hasAmountShape)) bucket.push(candidate);
   }
   Object.values(payload).forEach(v=>{ if(v && typeof v==='object') collectDonationCandidates(v,bucket); });
+  return bucket;
+}
+
+
+function collectMissionStatusCandidates(payload, bucket=[]){
+  if(!payload) return bucket;
+  if(Array.isArray(payload)){
+    payload.forEach(item=>collectMissionStatusCandidates(item,bucket));
+    return bucket;
+  }
+  if(typeof payload!=='object') return bucket;
+  const candidate = payload.mission || payload;
+  if(candidate && typeof candidate==='object'){
+    const hasMissionId = !!(candidate.missionDonationId || candidate.missionId);
+    const hasMissionStatus = candidate.status!=null || candidate.success!=null;
+    if(hasMissionId && hasMissionStatus) bucket.push(candidate);
+  }
+  Object.values(payload).forEach(v=>{ if(v && typeof v==='object') collectMissionStatusCandidates(v,bucket); });
   return bucket;
 }
 
@@ -1496,9 +1524,23 @@ function chatOnMessage(e){
     const msg=JSON.parse(e.data);
     if(msg.cmd===93102||msg.cmd===93101||msg.cmd===93103||msg.cmd===10100) console.log('WS cmd:',msg.cmd, JSON.stringify(msg.bdy).slice(0,200));
     const donationCandidates = collectDonationCandidates(msg.bdy);
-    if(donationCandidates.length){
-      donationCandidates.forEach(d=>handleDonation(d));
-    }
+    const missionStatusCandidates = collectMissionStatusCandidates(msg.bdy);
+    const seen = new Set();
+
+    donationCandidates.forEach(d=>{
+      const extrasObj = typeof d?.extras==='string' ? (()=>{ try{return JSON.parse(d.extras);}catch{return null;} })() : d?.extras;
+      const key = `${extrasObj?.missionDonationId||extrasObj?.missionId||''}_${extrasObj?.status||''}_${extrasObj?.success}`;
+      if(key!=='__undefined' && seen.has(key)) return;
+      if(key!=='__undefined') seen.add(key);
+      handleDonation(d);
+    });
+
+    missionStatusCandidates.forEach(m=>{
+      const key = `${m?.missionDonationId||m?.missionId||''}_${m?.status||''}_${m?.success}`;
+      if(seen.has(key)) return;
+      seen.add(key);
+      handleDonation({ profile: { nickname: m?.nickname || '' }, extras: m, msg: m?.missionText || '' });
+    });
     if(msg.cmd===93101&&msg.bdy){
       const chats=Array.isArray(msg.bdy)?msg.bdy:[msg.bdy];
       chats.forEach(chat=>{ if(!chat.msg||!chat.profile) return; const profile=typeof chat.profile==='string'?JSON.parse(chat.profile):chat.profile; chatAddMsg(new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),profile.nickname||'익명',chat.msg); });
