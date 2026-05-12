@@ -1366,7 +1366,7 @@ function renderDone(){
   const status = String(extras?.status || '').toUpperCase();
   const successStatuses = ['SUCCESS','SUCCEEDED','SUCCESSFUL','COMPLETED','COMPLETE','DONE'];
   const failStatuses = ['FAIL','FAILED','CANCELED','CANCELLED','EXPIRED','REJECTED'];
-  const pendingStatuses = ['PENDING','WAITING','IN_PROGRESS','ONGOING','OPEN'];
+  const pendingStatuses = ['PENDING','WAITING','IN_PROGRESS','ONGOING','OPEN','APPROVED','ACCEPTED','STARTED','RUNNING'];
 
   const statusIsSuccess = successStatuses.includes(status);
   const statusIsFailed = failStatuses.includes(status);
@@ -1413,7 +1413,7 @@ function handleDonation(donation){
     const missionStatus = getMissionStatusInfo(extras);
     if(!rawAmt && isMission && missionId && missionRecords[missionId]?.rawAmt) rawAmt = missionRecords[missionId].rawAmt;
     if(!rawAmt && !(isMission && missionId && !missionStatus.pending)) return;
-    const countedAmt = isMission ? (missionStatus.success ? rawAmt : 0) : rawAmt;
+    const countedAmt = isMission ? (missionStatus.pending ? 0 : rawAmt) : rawAmt;
     const time = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     const log=document.getElementById('chat-log'), div=document.createElement('div');
     div.style.cssText=`padding:3px 0;border-bottom:0.5px solid var(--border);background:${isMission?'rgba(245,158,11,.08)':'rgba(255,200,0,.06)'}`;
@@ -1421,12 +1421,17 @@ function handleDonation(donation){
     const label = isMission ? `미션 ${missionStatus.label}` : '후원';
     const msg = donation.msg || extras?.missionText || extras?.donationText || extras?.message || '';
     const amountText = isMission && !missionStatus.success ? `${rawAmt.toLocaleString()}원` : `${countedAmt.toLocaleString()}원`;
+    const shouldShowInDonationFeed = !isMission || !missionStatus.pending;
+    const shouldShowInChatLog = !isMission || !missionStatus.pending;
     div.innerHTML=`<span style="color:var(--text3)">[${time}]</span> <span style="color:#f59e0b;font-weight:700">${icon} ${nick||'익명의 후원자'}</span><span style="color:var(--text2)"> ${amountText} ${label}!</span>${isMission&&!missionStatus.success?`<span style="color:var(--text3);font-size:11px"> · 합산 제외</span>`:''}${msg?`<div style="color:var(--text2);font-size:12px;padding-left:4px;margin-top:2px">💬 ${msg}</div>`:''}`;
-    log.appendChild(div); log.scrollTop=log.scrollHeight;
+    if(shouldShowInChatLog){
+      log.appendChild(div);
+      log.scrollTop=log.scrollHeight;
+    }
 
     // 도네 전용 피드에도 추가
     const feed = document.getElementById('done-feed');
-    if(feed){
+    if(feed && shouldShowInDonationFeed){
       if(feed.querySelector('[data-empty]')) feed.innerHTML='';
       const fdiv = document.createElement('div');
       fdiv.style.cssText=`padding:8px 10px;border-radius:8px;background:${isMission?'rgba(245,158,11,.1)':'rgba(91,74,232,.07)'};border:1px solid ${isMission?'rgba(245,158,11,.2)':'var(--border)'}`;
@@ -1435,7 +1440,9 @@ function handleDonation(donation){
       feed.scrollTop = feed.scrollHeight;
     }
 
-    doneLogs.push({ time, nick: nick||'익명의 후원자', amt: countedAmt, rawAmt, type: isMission?'mission':'donation', msg, missionStatus: missionStatus.status, missionSuccess: missionStatus.success, missionDonationId: missionId });
+    if(shouldShowInDonationFeed){
+      doneLogs.push({ time, nick: nick||'익명의 후원자', amt: countedAmt, rawAmt, type: isMission?'mission':'donation', msg, missionStatus: missionStatus.status, missionSuccess: missionStatus.success, missionDonationId: missionId });
+    }
     if(isMission){
       const key = missionId || `${time}_${nick}_${rawAmt}_${msg}`;
       const prev = missionRecords[key] || { countedAmt: 0, nick: nick||'익명의 후원자' };
@@ -1480,7 +1487,7 @@ async function fetchAccessToken(channelId){
   return r.json();
 }
 
-  
+
 function collectDonationCandidates(payload, bucket=[]){
   if(!payload) return bucket;
   if(Array.isArray(payload)){
