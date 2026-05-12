@@ -1367,7 +1367,7 @@ function renderDone(){
   const successStatuses = ['SUCCESS','SUCCEEDED','SUCCESSFUL','COMPLETED','COMPLETE','DONE'];
   const failStatuses = ['FAIL','FAILED','CANCELED','CANCELLED','EXPIRED','REJECTED'];
   const success = extras?.success === true || successStatuses.includes(status);
-  const failed = extras?.success === false && failStatuses.includes(status);
+  const failed = extras?.success === false || failStatuses.includes(status);
   const pending = !success && !failed;
   const label = success ? '성공' : failed ? '실패' : '대기';
   return { status, success, failed, pending, label };
@@ -1401,11 +1401,11 @@ function handleDonation(donation){
     let rawAmt = parseDonationAmount(extras?.totalPayAmount ?? extras?.payAmount ?? 0);
     // donationType: CHAT=일반후원, MISSION=미션
     const dtype = extras?.donationType||'';
-    const missionId = extras?.missionDonationId || extras?.donationId || '';
-    const isMission = dtype.toUpperCase()==='MISSION' || dtype.toUpperCase()==='MISSION_PARTICIPATION' || !!extras?.missionDonationId;
-    if(!rawAmt && isMission && missionId && missionRecords[missionId]?.rawAmt) rawAmt = missionRecords[missionId].rawAmt;
-    if(!rawAmt) return;
+    const missionId = extras?.missionDonationId || extras?.donationId || extras?.missionId || '';
+    const isMission = dtype.toUpperCase()==='MISSION' || dtype.toUpperCase()==='MISSION_PARTICIPATION' || !!extras?.missionDonationId || !!extras?.missionId;
     const missionStatus = getMissionStatusInfo(extras);
+    if(!rawAmt && isMission && missionId && missionRecords[missionId]?.rawAmt) rawAmt = missionRecords[missionId].rawAmt;
+    if(!rawAmt && !(isMission && missionId && !missionStatus.pending)) return;
     const countedAmt = isMission ? (missionStatus.success ? rawAmt : 0) : rawAmt;
     const time = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     const log=document.getElementById('chat-log'), div=document.createElement('div');
@@ -1473,13 +1473,31 @@ async function fetchAccessToken(channelId){
   return r.json();
 }
 
+function collectDonationCandidates(payload, bucket=[]){
+  if(!payload) return bucket;
+  if(Array.isArray(payload)){
+    payload.forEach(item=>collectDonationCandidates(item,bucket));
+    return bucket;
+  }
+  if(typeof payload!=='object') return bucket;
+  const candidate = payload.donation || payload;
+  if(candidate && typeof candidate==='object'){
+    const extrasObj = typeof candidate.extras==='string' ? (()=>{ try{return JSON.parse(candidate.extras);}catch{return null;} })() : candidate.extras;
+    const hasMissionShape = !!(extrasObj?.missionDonationId || extrasObj?.missionId || extrasObj?.donationType==='MISSION' || extrasObj?.status);
+    const hasAmountShape = candidate.payAmount!=null || candidate.totalPayAmount!=null || candidate.amt!=null;
+    if(candidate.extras || hasMissionShape || hasAmountShape) bucket.push(candidate);
+  }
+  Object.values(payload).forEach(v=>{ if(v && typeof v==='object') collectDonationCandidates(v,bucket); });
+  return bucket;
+}
+
 function chatOnMessage(e){
   try{
     const msg=JSON.parse(e.data);
     if(msg.cmd===93102||msg.cmd===93101||msg.cmd===93103||msg.cmd===10100) console.log('WS cmd:',msg.cmd, JSON.stringify(msg.bdy).slice(0,200));
-    if(msg.cmd===93102&&msg.bdy){
-      const dons=Array.isArray(msg.bdy)?msg.bdy:[msg.bdy];
-      dons.forEach(d=>handleDonation(d));
+    const donationCandidates = collectDonationCandidates(msg.bdy);
+    if(donationCandidates.length){
+      donationCandidates.forEach(d=>handleDonation(d));
     }
     if(msg.cmd===93101&&msg.bdy){
       const chats=Array.isArray(msg.bdy)?msg.bdy:[msg.bdy];
