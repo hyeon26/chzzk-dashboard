@@ -1463,11 +1463,25 @@ function getFailedMissionAmount(targetAmount){
   if(target<=0) return 0;
   return Math.max(1000, Math.floor(target * 0.1));
 }
-function pickMissionAmount(extras, donation, missionStatus, fallbackTarget=0){
+function getFailedMissionRecordAmount(record, fallbackTarget=0){
+  if(!record) return getFailedMissionAmount(fallbackTarget);
+  const additions = Object.values(record.additions || {}).map(toDonationAmount).filter(v=>v>0);
+  const additionsTotal = additions.reduce((sum, value)=>sum+value, 0);
+  const storedBase = toDonationAmount(record.baseAmount);
+  const inferredBase = Math.max(0, toDonationAmount(record.rawAmt) - additionsTotal);
+  const baseAmount = storedBase || inferredBase || toDonationAmount(fallbackTarget);
+  const perContributionTotal = [baseAmount, ...additions]
+    .filter(value=>value>0)
+    .reduce((sum, value)=>sum+getFailedMissionAmount(value), 0);
+  return perContributionTotal || getFailedMissionAmount(fallbackTarget);
+}
+function pickMissionAmount(extras, donation, missionStatus, fallbackTarget=0, missionRecord=null){
   if(missionStatus?.failed){
     const settled = getAmountFromKeys(extras, ['settlementPayAmount','missionSettlementAmount','realPayAmount','rewardPayAmount','missionFailPayAmount'])
       || getAmountFromKeys(donation, ['settlementPayAmount','missionSettlementAmount','realPayAmount','rewardPayAmount','missionFailPayAmount']);
     if(settled>0) return settled;
+    const recordedFailureAmount = getFailedMissionRecordAmount(missionRecord, fallbackTarget);
+    if(recordedFailureAmount>0) return recordedFailureAmount;
     const target = getDonationAmount(extras, donation) || toDonationAmount(fallbackTarget);
     return getFailedMissionAmount(target);
   }
@@ -1493,6 +1507,7 @@ function rememberMissionTargetAmount(missionKey, nick, amount, isAddition, event
       next.rawAmt = toDonationAmount(next.rawAmt) + normalizedAmount;
     }
   } else {
+    next.baseAmount = Math.max(toDonationAmount(next.baseAmount), normalizedAmount);
     next.rawAmt = Math.max(toDonationAmount(next.rawAmt), normalizedAmount);
   }
   missionRecords[missionKey] = next;
@@ -1549,8 +1564,9 @@ function handleDonation(donation){
     const missionStatus = getMissionStatusInfo(extras, donation);
     const msg = donation.msg || extras?.missionText || extras?.donationText || extras?.message || '';
     const missionRecordKey = isMission ? resolveMissionRecordKey(missionId, missionEventId, nick, msg) : '';
-    const previousMissionTarget = isMission ? toDonationAmount(missionRecords[missionRecordKey]?.rawAmt) : 0;
-    let rawAmt = isMission ? pickMissionAmount(extras, donation, missionStatus, previousMissionTarget) : getDonationAmount(extras, donation);
+    const previousMissionRecord = isMission ? missionRecords[missionRecordKey] : null;
+    const previousMissionTarget = isMission ? toDonationAmount(previousMissionRecord?.rawAmt) : 0;
+    let rawAmt = isMission ? pickMissionAmount(extras, donation, missionStatus, previousMissionTarget, previousMissionRecord) : getDonationAmount(extras, donation);
     const eventAmt = rawAmt;
     if(isMission && missionId){
       const dedupeKey = missionEventId ? `${missionId}_${missionEventId}` : `${missionId}_${missionStatus.status}_${missionStatus.success}_${rawAmt}_${nick}`;
@@ -1566,7 +1582,7 @@ function handleDonation(donation){
       rawAmt = rememberMissionTargetAmount(missionRecordKey, nick, rawAmt, isMissionAddition, missionEventId, { missionId, baseMissionId, msg });
     }
     if(!rawAmt && isMission && previousMissionTarget){
-      rawAmt = pickMissionAmount(extras, donation, missionStatus, previousMissionTarget);
+      rawAmt = pickMissionAmount(extras, donation, missionStatus, previousMissionTarget, previousMissionRecord);
     }
     if(!rawAmt && !(isMission && missionId && !missionStatus.pending && !isRejectedMission)) return;
     const countedAmt = isMission ? (shouldCountMission ? rawAmt : 0) : rawAmt;
