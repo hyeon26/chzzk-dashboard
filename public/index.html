@@ -1534,14 +1534,14 @@ function rememberMissionTargetAmount(missionKey, nick, amount, isAddition, event
     ...prev,
     additions: { ...(prev.additions || {}) },
     eventIds: { ...(prev.eventIds || {}) },
-    nick: nick||prev.nick||'익명의 후원자',
+    nick: isAddition ? (prev.nick||nick||'익명의 후원자') : (nick||prev.nick||'익명의 후원자'),
     msg: meta.msg || prev.msg || '',
     updatedAt: Date.now()
   };
   [meta.missionId, meta.baseMissionId, eventId].filter(Boolean).forEach(id=>{ next.eventIds[id] = true; });
   const normalizedAmount = toDonationAmount(amount);
   if(isAddition){
-    const additionKey = eventId || `${Date.now()}_${next.nick}_${normalizedAmount}`;
+    const additionKey = eventId || `${Date.now()}_${nick||'익명의 후원자'}_${normalizedAmount}`;
     if(!next.additions[additionKey]){
       next.additions[additionKey] = { amount: normalizedAmount, nick: nick||'익명의 후원자', eventId };
       next.rawAmt = toDonationAmount(next.rawAmt) + normalizedAmount;
@@ -1563,10 +1563,12 @@ function resolveMissionRecordKey(preferredKey, missionEventId, nick, msg){
   const idMatch = entries.find(([,record])=>preferredKey && record?.eventIds?.[preferredKey])
     || entries.find(([,record])=>missionEventId && record?.eventIds?.[missionEventId]);
   if(idMatch) return idMatch[0];
-  const sameMessage = entries.filter(([,record])=>msg && record?.msg===msg && (!nick || record?.nick===nick || record?.nick==='익명의 후원자'));
+  const sameMessage = entries.filter(([,record])=>msg && record?.msg===msg);
   if(sameMessage.length===1) return sameMessage[0][0];
   const openRecords = entries.filter(([,record])=>toDonationAmount(record?.rawAmt)>0 && !toDonationAmount(record?.countedAmt) && (!nick || record?.nick===nick || record?.nick==='익명의 후원자'));
   if(openRecords.length===1) return openRecords[0][0];
+  const anyOpenRecords = entries.filter(([,record])=>toDonationAmount(record?.rawAmt)>0 && !toDonationAmount(record?.countedAmt));
+  if(anyOpenRecords.length===1) return anyOpenRecords[0][0];
   return preferredKey || messageKey;
 }
 function safeDocId(value){ return String(value || '').replace(/[\/#?]/g, '_'); }
@@ -1791,14 +1793,18 @@ function chatOnMessage(e){
 
     donationCandidates.forEach(d=>{
       const extrasObj = typeof d?.extras==='string' ? (()=>{ try{return JSON.parse(d.extras);}catch{return null;} })() : d?.extras;
-      const key = `${extrasObj?.missionDonationId||extrasObj?.missionId||''}_${extrasObj?.status||''}_${extrasObj?.success}`;
+      const missionKey = extrasObj?.missionDonationId||extrasObj?.missionId||'';
+      const eventKey = extrasObj?.donationId||extrasObj?.payId||extrasObj?.historyId||extrasObj?.missionParticipationId||extrasObj?.participationId||d?.donationId||d?.payId||d?.historyId||'';
+      const amountKey = getDonationAmount(extrasObj, d);
+      const nickKey = (typeof d?.profile==='string' ? (()=>{ try{return JSON.parse(d.profile)?.nickname;}catch{return '';} })() : d?.profile?.nickname) || extrasObj?.nickname || '';
+      const key = `${missionKey}_${eventKey}_${extrasObj?.status||''}_${extrasObj?.success}_${amountKey}_${nickKey}`;
       if(key!=='__undefined' && seen.has(key)) return;
       if(key!=='__undefined') seen.add(key);
       handleDonation(d);
     });
 
     missionStatusCandidates.forEach(m=>{
-      const key = `${m?.missionDonationId||m?.missionId||''}_${m?.status||''}_${m?.success}`;
+      const key = `${m?.missionDonationId||m?.missionId||''}_${m?.donationId||m?.payId||m?.historyId||m?.missionParticipationId||m?.participationId||''}_${m?.status||''}_${m?.success}_${getDonationAmount(m,m)}_${m?.nickname||''}`;
       if(seen.has(key)) return;
       seen.add(key);
       handleDonation({ profile: { nickname: m?.nickname || '' }, extras: m, msg: m?.missionText || '' });
