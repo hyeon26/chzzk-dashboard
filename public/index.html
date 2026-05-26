@@ -1459,8 +1459,44 @@ function getAmountFromKeys(source, keys){
   }
   return 0;
 }
+function firstTextValue(...values){
+  for(const value of values){
+    const text = String(value || '').trim();
+    if(text) return text;
+  }
+  return '';
+}
+function getBaseMissionId(extras, donation){
+  return firstTextValue(
+    extras?.missionDonationId,
+    extras?.missionId,
+    extras?.missionDonationNo,
+    extras?.missionNo,
+    extras?.missionTargetId,
+    donation?.missionDonationId,
+    donation?.missionId,
+    donation?.missionDonationNo,
+    donation?.missionNo,
+    donation?.missionTargetId
+  );
+}
 function getMissionEventId(extras, donation){
-  return extras?.donationId || extras?.payId || extras?.historyId || extras?.missionParticipationId || donation?.donationId || donation?.payId || donation?.historyId || '';
+  return firstTextValue(
+    extras?.donationId,
+    extras?.payId,
+    extras?.historyId,
+    extras?.missionParticipationId,
+    extras?.participationId,
+    extras?.missionHistoryId,
+    extras?.donationUniqueId,
+    donation?.donationId,
+    donation?.payId,
+    donation?.historyId,
+    donation?.missionParticipationId,
+    donation?.participationId,
+    donation?.missionHistoryId,
+    donation?.donationUniqueId
+  );
 }
 function getMissionType(value){ return String(value || '').toUpperCase(); }
 function getPayloadType(extras, donation){ return getMissionType(extras?.type || donation?.type || extras?.eventType || donation?.eventType); }
@@ -1563,12 +1599,12 @@ function resolveMissionRecordKey(preferredKey, missionEventId, nick, msg){
   const idMatch = entries.find(([,record])=>preferredKey && record?.eventIds?.[preferredKey])
     || entries.find(([,record])=>missionEventId && record?.eventIds?.[missionEventId]);
   if(idMatch) return idMatch[0];
-  const sameMessage = entries.filter(([,record])=>msg && record?.msg===msg);
+  const sameMessage = entries.filter(([,record])=>
+    msg &&
+    record?.msg===msg &&
+    (!nick || record?.nick===nick || record?.baseNick===nick || record?.additions?.[missionEventId]?.nick===nick)
+  );
   if(sameMessage.length===1) return sameMessage[0][0];
-  const openRecords = entries.filter(([,record])=>toDonationAmount(record?.rawAmt)>0 && !toDonationAmount(record?.countedAmt) && (!nick || record?.nick===nick || record?.nick==='익명의 후원자'));
-  if(openRecords.length===1) return openRecords[0][0];
-  const anyOpenRecords = entries.filter(([,record])=>toDonationAmount(record?.rawAmt)>0 && !toDonationAmount(record?.countedAmt));
-  if(anyOpenRecords.length===1) return anyOpenRecords[0][0];
   return preferredKey || messageKey;
 }
 function safeDocId(value){ return String(value || '').replace(/[\/#?]/g, '_'); }
@@ -1599,7 +1635,7 @@ function handleDonation(donation){
     // donationType: CHAT=일반후원, MISSION=미션
     const dtype = extras?.donationType||'';
     const dtypeUpper = dtype.toUpperCase();
-    const baseMissionId = extras?.missionDonationId || extras?.missionId || donation?.missionDonationId || donation?.missionId || '';
+    const baseMissionId = getBaseMissionId(extras, donation);
     const missionEventId = getMissionEventId(extras, donation);
     const missionId = baseMissionId || missionEventId;
     const isMissionAddition = isMissionAdditionType(dtype, extras, donation);
@@ -1684,7 +1720,7 @@ function handleDonation(donation){
         ...prev,
         countedAmt,
         rawAmt: Math.max(toDonationAmount(prev.rawAmt), rawAmt),
-        nick: nick||prev.nick||'익명의 후원자',
+        nick: prev.nick||nick||'익명의 후원자',
         msg: msg || prev.msg || '',
         eventIds: { ...(prev.eventIds || {}), ...(missionId ? { [missionId]: true } : {}), ...(missionEventId ? { [missionEventId]: true } : {}) },
         status: missionStatus.status,
@@ -1754,7 +1790,7 @@ function collectDonationCandidates(payload, bucket=[]){
     const extrasObj = parseMaybeJson(candidate.extras);
     const dtype = String(extrasObj?.donationType || candidate.donationType || '').toUpperCase();
     const eventType = getPayloadType(extrasObj || candidate, candidate);
-    const hasMissionShape = !!(extrasObj?.missionDonationId || extrasObj?.missionId || candidate.missionDonationId || candidate.missionId || dtype==='MISSION' || dtype==='MISSION_PARTICIPATION' || eventType==='DONATION_MISSION_IN_PROGRESS' || eventType==='DONATION_MISSION_PARTICIPATION' || extrasObj?.status || candidate.status || candidate.success!=null);
+    const hasMissionShape = !!(getBaseMissionId(extrasObj || {}, candidate) || dtype==='MISSION' || dtype==='MISSION_PARTICIPATION' || eventType==='DONATION_MISSION_IN_PROGRESS' || eventType==='DONATION_MISSION_PARTICIPATION' || extrasObj?.status || candidate.status || candidate.success!=null);
     const hasAmountShape = candidate.payAmount!=null || candidate.totalPayAmount!=null || candidate.amt!=null || extrasObj?.payAmount!=null || extrasObj?.totalPayAmount!=null;
     const hasExtrasObject = typeof candidate.extras==='object' && candidate.extras!==null;
     const hasExtrasString = typeof candidate.extras==='string' && candidate.extras.trim().startsWith('{');
@@ -1774,7 +1810,7 @@ function collectMissionStatusCandidates(payload, bucket=[]){
   const candidate = parseMaybeJson(payload.mission || payload.event || payload);
   if(candidate && typeof candidate==='object'){
     const eventType = getPayloadType(candidate, candidate);
-    const hasMissionId = !!(candidate.missionDonationId || candidate.missionId || candidate.donationId);
+    const hasMissionId = !!(getBaseMissionId(candidate, candidate) || getMissionEventId(candidate, candidate));
     const hasMissionStatus = candidate.status!=null || candidate.success!=null || candidate.missionStatus!=null || candidate.missionSuccess!=null || candidate.isSuccess!=null;
     const isMissionEvent = eventType==='DONATION_MISSION_IN_PROGRESS' || eventType==='DONATION_MISSION_PARTICIPATION' || eventType==='MISSION_IN_PROGRESS' || eventType==='MISSION_STATUS';
     if((hasMissionId && hasMissionStatus) || isMissionEvent) bucket.push(candidate);
@@ -1793,8 +1829,8 @@ function chatOnMessage(e){
 
     donationCandidates.forEach(d=>{
       const extrasObj = typeof d?.extras==='string' ? (()=>{ try{return JSON.parse(d.extras);}catch{return null;} })() : d?.extras;
-      const missionKey = extrasObj?.missionDonationId||extrasObj?.missionId||'';
-      const eventKey = extrasObj?.donationId||extrasObj?.payId||extrasObj?.historyId||extrasObj?.missionParticipationId||extrasObj?.participationId||d?.donationId||d?.payId||d?.historyId||'';
+      const missionKey = getBaseMissionId(extrasObj || {}, d);
+      const eventKey = getMissionEventId(extrasObj || {}, d);
       const amountKey = getDonationAmount(extrasObj, d);
       const nickKey = (typeof d?.profile==='string' ? (()=>{ try{return JSON.parse(d.profile)?.nickname;}catch{return '';} })() : d?.profile?.nickname) || extrasObj?.nickname || '';
       const key = `${missionKey}_${eventKey}_${extrasObj?.status||''}_${extrasObj?.success}_${amountKey}_${nickKey}`;
@@ -1804,7 +1840,7 @@ function chatOnMessage(e){
     });
 
     missionStatusCandidates.forEach(m=>{
-      const key = `${m?.missionDonationId||m?.missionId||''}_${m?.donationId||m?.payId||m?.historyId||m?.missionParticipationId||m?.participationId||''}_${m?.status||''}_${m?.success}_${getDonationAmount(m,m)}_${m?.nickname||''}`;
+      const key = `${getBaseMissionId(m,m)}_${getMissionEventId(m,m)}_${m?.status||''}_${m?.success}_${getDonationAmount(m,m)}_${m?.nickname||''}`;
       if(seen.has(key)) return;
       seen.add(key);
       handleDonation({ profile: { nickname: m?.nickname || '' }, extras: m, msg: m?.missionText || '' });
