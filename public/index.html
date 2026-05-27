@@ -1752,6 +1752,9 @@ function handleDonation(donation){
     const incomingAmount = getDonationAmount(extras, donation);
     const settlementAmount = isMission ? getMissionSettlementAmount(extras, donation) : 0;
     let missionAdditionLogged = false;
+    if(isMission && incomingAmount && (missionId || baseMissionId)){
+      rememberMissionContribution(baseMissionId || missionId, missionEventId, nick, incomingAmount, isMissionAddition, msg);
+    }
     if(isMissionAddition && incomingAmount && !settlementAmount && (baseMissionId || missionEventId)){
       const additionChatKey = `${baseMissionId || ''}_${missionEventId || ''}_${nick || ''}_${incomingAmount}`;
       const nowTs = Date.now();
@@ -1813,7 +1816,6 @@ function handleDonation(donation){
     if(isMissionAddition && shouldCountMission && settlementContributionKey && previousMissionRecord?.settledContributions?.[settlementContributionKey]) return;
     if(isMission && missionStatus.pending && rawAmt){
       rawAmt = rememberMissionTargetAmount(missionRecordKey, nick, rawAmt, isMissionAddition, missionEventId, { missionId, baseMissionId, msg });
-      rememberMissionContribution(missionRecordKey || missionId, missionEventId, nick, eventAmt || rawAmt, isMissionAddition, msg);
     }
     if(!rawAmt && isMission && previousMissionTarget){
       rawAmt = pickMissionAmount(extras, donation, missionStatus, previousMissionTarget, previousMissionRecord);
